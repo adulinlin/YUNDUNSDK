@@ -59,7 +59,7 @@ $sdk->api_call('xxxrequrl', $payload, true);
      }
  
  
- ###清除指定url
+### 清除指定url
  
  请求url:Domain.DashBoard.Speed
  
@@ -92,7 +92,7 @@ $sdk->api_call('xxxrequrl', $payload, true);
     }
  
  
- ##获取域名列表
+### 获取域名列表
  
  请求地址：Domain.list
  
