@@ -279,7 +279,7 @@ class YundunCurlHttpClient implements YundunHttpable {
     $options = array(
       CURLOPT_URL            => $url,
       CURLOPT_CONNECTTIMEOUT => 10,
-      CURLOPT_TIMEOUT        => 30,
+      CURLOPT_TIMEOUT        => 20,
       CURLOPT_RETURNTRANSFER => true, // Follow 301 redirects
       CURLOPT_HEADER         => true, // Enable header processing
     );
@@ -811,7 +811,7 @@ class SignedRequest
 //######################YundunSDK class#######################
 class YundunSDk{
 	
-	private $base_api_url = 'http://api.yundun.cn/V1/';
+	const __BASE_API_URL__ = 'http://api.yundun.cn/V1/';
 	
 	private $app_id; //必需
 	private $app_secret; //必需
@@ -819,8 +819,10 @@ class YundunSDk{
 	private $user_id;
 	private $client_ip; //客户端ip
 	private $client_userAgent; //客户端userAgent
-	
-	public function __construct($param){
+    private $base_api_url;
+
+
+  public function __construct($param){
 		if(!is_array($param)){
 			throw new YundunSDKException('param need array');
 		}
@@ -835,15 +837,17 @@ class YundunSDk{
 		if(isset($param['client_userAgent'])){
 			$this->client_userAgent = isset($param['client_userAgent'])?trim($param['client_userAgent']):'';
 		}
-        if(isset($param['base_api_url'])){
-          $this->base_api_url = $param['base_api_url'];
+
+        $this->base_api_url = isset($param['base_api_url'])&& !empty($param['base_api_url'])?$param['base_api_url']:self::__BASE_API_URL__;
+        if(substr($this->base_api_url, -1) != '/'){
+          $this->base_api_url .= '/';
         }
 		$this->yundunhttpclient = new YundunCurlHttpClient();
 	}
 	
 	public function setApiUrl($url){
-		$api_url = $this->base_api_url.$url;
-		//http https开头的url
+        $api_url = $this->base_api_url.$url;
+        //http https开头的url
 		if(stripos($url,'http://') !== false || stripos($url,'https://') !== false){ 
 			$api_url = $url;
 		}
