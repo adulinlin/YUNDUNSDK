@@ -1,0 +1,11 @@
+{
+    "name": "jason-gao/yundunsdk",
+    "description": "YUNDUN SDK",
+    "authors": [
+        {
+            "name": "jason-gao",
+            "email": "3048789891@qq.com"
+        }
+    ],
+    "require": {}
+}
