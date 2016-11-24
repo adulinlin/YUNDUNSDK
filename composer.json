@@ -7,5 +7,7 @@
             "email": "3048789891@qq.com"
         }
     ],
-    "require": {}
+    "require": {
+        "guzzlehttp/guzzle": "6.2.2"
+    }
 }
