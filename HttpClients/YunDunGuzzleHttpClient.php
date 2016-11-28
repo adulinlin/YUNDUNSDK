@@ -11,8 +11,7 @@ namespace YunDunSdk\HttpClients;
 use YunDunSdk\Exceptions\HttpClientException;
 use YunDunSdk\Http\RawResponse;
 use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\ResponseInterface;
-use GuzzleHttp\Ring\Exception\RingException;
+use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\RequestException;
 
 class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
@@ -38,12 +37,11 @@ class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
             'timeout' => $timeOut,
             'connect_timeout' => 10,
         ];
-        $request = $this->guzzleClient->createRequest($method, $url, $options);
         try {
-            $rawResponse = $this->guzzleClient->send($request);
+            $rawResponse = $this->guzzleClient->request($method, $url, $options);
         } catch (RequestException $e) {
             $rawResponse = $e->getResponse();
-            if ($e->getPrevious() instanceof RingException || !$rawResponse instanceof ResponseInterface) {
+            if (!$rawResponse instanceof ResponseInterface) {
                 throw new HttpClientException($e->getMessage(), $e->getCode());
             }
         }
