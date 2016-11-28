@@ -8,7 +8,7 @@ use GuzzleHttp\Exception\RequestException;
 use YunDunSdk\SignRequest\SignedRequest;
 use YunDunSdk\HttpClients\HttpClientsFactory;
 
-class YunDunSDk
+class YunDunSdk
 {
 
     const __BASE_API_URL__ = 'http://api.yundun.cn/V1/';
