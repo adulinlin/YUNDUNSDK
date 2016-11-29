@@ -1,5 +1,5 @@
 {
-    "name": "jason-gao/yundunsdk",
+    "name": "yundun/yundunsdk",
     "description": "YUNDUN SDK",
     "authors": [
         {
@@ -13,7 +13,7 @@
     },
     "autoload": {
         "psr-4": {
-            "YunDunSdk\\": "yundunsdk/"
+            "YunDunSdk\\": "src/"
         },
         "files": []
     }
