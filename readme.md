@@ -7,7 +7,7 @@
 +   环境要求：php >=5.5
          
 ##使用步骤
-1.	composer require jason-gao/yundunsdk dev-master
+1.	composer require yundun/yundunsdk dev-master
  
 2.	实例化
 //sdk
