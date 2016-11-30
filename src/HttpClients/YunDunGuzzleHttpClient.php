@@ -33,10 +33,13 @@ class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
     {
         $options = [
             'headers' => $headers,
-            'body' => $body,
+            'form_params' => $body,
             'timeout' => $timeOut,
             'connect_timeout' => 10,
         ];
+        if(isset($headers['Content-Type']) && $headers['Content-Type'] == 'application/json'){
+            $options['json'] = json_decode($body, true);
+        }
         try {
             $rawResponse = $this->guzzleClient->request($method, $url, $options);
         } catch (RequestException $e) {

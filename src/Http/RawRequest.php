@@ -1,0 +1,203 @@
+<?php
+namespace YunDunSdk\Http;
+
+use YunDunSdk\Exceptions\YunDunSdkException;
+
+class RawRequest
+{
+    protected $url;
+    protected $headers;
+    protected $body;
+    protected $method;
+    protected $base_api_url;
+    protected $timeout;
+    protected $urlParams;
+
+
+    public function __construct($method = '', $url = '', array $headers = array(), $body = null, $timeout = 10, $urlParams = array())
+    {
+        $this->method = strtoupper($method);
+        $this->url = $url;
+        $this->headers = $headers;
+        $this->body = $body;
+        $this->timeout = (int)$timeout;
+        $this->urlParams = $urlParams;
+    }
+
+    /**
+     * @param $headers
+     * @node_name 设置请求头
+     * @link
+     * @desc
+     */
+    public function setHeaders($headers){
+        $this->headers = $headers;
+    }
+
+    /**
+     * @param $k
+     * @param $v
+     * @node_name 单个头设置
+     * @link
+     * @desc
+     */
+    public function setHeader($k, $v){
+        $this->headers[$k] = $v;
+    }
+
+    /**
+     * @return array
+     * @node_name 获取请求头
+     * @link
+     * @desc
+     */
+    public function getHeaders(){
+        return $this->headers;
+    }
+
+    /**
+     * @param $base_api_url
+     * @node_name 设置基url
+     * @link
+     * @desc
+     */
+    public function setBaseApiUrl($base_api_url){
+        if (substr($this->base_api_url, -1) != '/') {
+            $this->base_api_url .= '/';
+        }
+        $this->base_api_url = $base_api_url;
+    }
+
+    /**
+     * @param $url
+     * @throws YunDunSdkException
+     * @node_name 设置请求url
+     * @link
+     * @desc
+     */
+    public function setUrl($url)
+    {
+        //http https开头的url
+        if (stripos($url, 'http://') !== false || stripos($url, 'https://') !== false) {
+            $this->url = $url;
+        }else{
+            if(empty($this->base_api_url)){
+                throw new YunDunSdkException('must set base api url first');
+            }
+            $api_url = $this->base_api_url . $url;
+            $this->url = $api_url;
+        }
+    }
+
+    /**
+     * @return mixed
+     * @node_name 获取请求url
+     * @link
+     * @desc
+     */
+    public function getUrl()
+    {
+        $urlParams = $this->getUrlParams();
+        if (is_array($urlParams) && count($urlParams) > 0) {
+            $this->url .= (strpos($this->url, "?") === false) ? "?" : "&";
+            $this->url .= self::build_query($urlParams);
+        }
+        return $this->url;
+    }
+
+    /**
+     * @param $timeOut
+     * @node_name 设置超时时间
+     * @link
+     * @desc
+     */
+    public function setTimeOut($timeOut){
+        $this->timeout = $timeOut;
+    }
+
+    /**
+     * @return int
+     * @node_name 获取超时时间
+     * @link
+     * @desc
+     */
+    public function getTimeOut(){
+        return $this->timeout;
+    }
+
+    /**
+     * @param $urlParams
+     * @node_name 设置url params用于附加在url后面
+     * @link
+     * @desc
+     */
+    public function setUrlParams($urlParams){
+        $this->urlParams = $urlParams;
+    }
+
+    /**
+     * @return mixed
+     * @node_name 获取url params
+     * @link
+     * @desc
+     */
+    public function getUrlParams(){
+        return $this->urlParams;
+    }
+
+    /**
+     * @param $params
+     * @return string
+     * @node_name x-www-form-urlencoded
+     * @link
+     * @desc
+     */
+    private static function build_query($params) {
+        if (function_exists("http_build_query")) {
+            return http_build_query($params, "", "&");
+        } else {
+            foreach ($params as $name => $value) {
+                $elements[] = "{$name}=" . urlencode($value);
+            }
+
+            return implode("&", $elements);
+        }
+    }
+
+
+    public function setBody($body){
+        $this->body = $body;
+    }
+
+    /**
+     * @return null
+     * @node_name 获取body
+     * @link
+     * @desc
+     */
+    public function getBody(){
+        return $this->body;
+    }
+
+    /**
+     * @param $method
+     * @node_name 设置请求方法
+     * @link
+     * @desc
+     */
+    public function setMethod($method){
+        $this->method = $method;
+    }
+
+    /**
+     * @return string
+     * @node_name 获取请求方法
+     * @link
+     * @desc
+     */
+    public function getMethod(){
+        return $this->method;
+    }
+
+
+}
