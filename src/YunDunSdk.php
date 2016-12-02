@@ -1,8 +1,15 @@
 <?php
 namespace YunDunSdk;
 
+/**
+ * 1. resetful
+ * 2. 请求体支持
+ */
+
 use YunDunSdk\Exceptions\YunDunSdkException;
 use YunDunSdk\Exceptions\HttpClientException;
+use InvalidArgumentException;
+use Exception;
 use GuzzleHttp\Exception\RequestException;
 use YunDunSdk\SignRequest\SignedRequest;
 use YunDunSdk\HttpClients\HttpClientsFactory;
@@ -41,7 +48,7 @@ class YunDunSdk
     public function signedRequest(RawRequest $request)
     {
         $payload = $request->getBody();
-        if(strtoupper($request->getMethod()) == 'GET'){
+        if (strtoupper($request->getMethod()) == 'GET') {
             $payload = $request->getUrlParams();
         }
 
@@ -53,46 +60,121 @@ class YunDunSdk
         $method = $request->getMethod();
         $headers = $request->getHeaders();
         $timeOut = $request->getTimeOut();
-        $RawResponse = $this->http_client_handler->send($url, $method, $payload, $headers, $timeOut);
+        $json_content = false;
+        $form_content = true;
+
+        if (isset($headers) && is_array($headers)) {
+            foreach ($headers as $h => $v) {
+                $h = strtolower($h);
+                $v = strtolower($v);
+
+                if ($h == "content-type") {
+                    $json_content = $v == "application/json";
+                    $form_content = $v == "application/x-www-form-urlencoded";
+                }
+            }
+        }
+        if($json_content){
+            $body = json_encode($payload);
+        }else if ($form_content) {
+            $body = http_build_query($payload);
+        }
+        $RawResponse = $this->http_client_handler->send($url, $method, $body, $headers, $timeOut);
         return $RawResponse;
     }
 
-    public function api_call($api_url, $body, $return_arr = false, $method = 'POST', $headers = array(), $timeOut = 10, $urlParams = array())
+    private function build_request($request)
     {
+        $defaultRequest = [
+            'url' => '',
+            'body' => [],
+            'method' => 'GET',
+            'headers' => [
+                'format' => 'json'
+            ],
+            'timeOut' => 10,
+            'urlParams' => [],
+            'returnArr' => false
+        ];
+        $request = array_merge($defaultRequest, $request);
+
         $defaultData = [
             'user_id' => $this->user_id,
             'client_ip' => $this->client_ip,
             'client_userAgent' => $this->client_userAgent,
             'fromadmin' => $_SESSION['fromadmin'],
         ];
-        $body = array_merge($defaultData, $body);
-        if(strtoupper($method) == 'GET'){
-            $urlParams = array_merge($defaultData, $urlParams);
-            $body = array();
+        $request['body'] = array_merge($defaultData, $request['body']);
+        if (strtoupper($request['method']) == 'GET') {
+            $request['urlParams'] = array_merge($defaultData, $request['urlParams']);
+            $request['body'] = array();
         }
-        $this->request->setBody($body);
-        $this->request->setUrl($api_url);
-        $this->request->setMethod($method);
-        $this->request->setTimeOut($timeOut);
-        $this->request->setHeaders($headers);
+
+        $this->request->setBody($request['body']);
+        $this->request->setUrl($request['url']);
+        $this->request->setMethod($request['method']);
+        $this->request->setTimeOut($request['timeOut']);
+        $this->request->setHeaders($request['headers']);
         isset($_SERVER['HTTP_SOCKETLOG']) && $this->request->setHeader('Socketlog', $_SERVER['HTTP_SOCKETLOG']);
         isset($_SERVER['HTTP_USER_AGENT']) && $this->request->setHeader('User-Agent', $_SERVER['HTTP_USER_AGENT']);
-        $this->request->setUrlParams($urlParams);
+        $this->request->setUrlParams($request['urlParams']);
 
+        return $this->request;
+    }
+
+
+    private function api_call($request)
+    {
+//        $request = array(
+//            'url' => '',
+//            'body' => [],
+//            'method' => '',
+//            'headers' => [],
+//            'timeOut' => 10,
+//            'urlParams' => [],
+//        );
+
+        $httpRequest = $this->build_request($request);
         try {
-            $rawResponse = $this->signedRequest($this->request);
+            $rawResponse = $this->signedRequest($httpRequest);
         } catch (HttpClientException $e) {
         } catch (RequestException $e) {
         } catch (InvalidArgumentException $e) {
         } catch (Exception $e) {
         }
-        if ($return_arr) {
-            return json_decode($rawResponse->getBody(), true);
-        } else {
-            return $rawResponse->getBody();
-        }
+        return $rawResponse->getBody();
     }
 
+
+    public  function get($request) {
+        $request["method"] = "GET";
+
+        return $this->api_call($request);
+    }
+
+    public  function post($request) {
+        $request["method"] = "POST";
+
+        return $this->api_call($request);
+    }
+
+    public  function put($request) {
+        $request["method"] = "PUT";
+
+        return $this->api_call($request);
+    }
+
+    public  function patch($request) {
+        $request["method"] = "PATCH";
+
+        return $this->api_call($request);
+    }
+
+    public  function delete($request) {
+        $request["method"] = "DELETE";
+
+        return $this->api_call($request);
+    }
 
 
 }

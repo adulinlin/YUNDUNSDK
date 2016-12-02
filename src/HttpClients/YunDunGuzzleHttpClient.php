@@ -31,15 +31,43 @@ class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
      */
     public function send($url, $method, $body, array $headers, $timeOut)
     {
+        if($body && !is_string($body)){
+            throw new HttpClientException('guzzle body must be string');
+        }
         $options = [
             'headers' => $headers,
-            'form_params' => $body,
             'timeout' => $timeOut,
             'connect_timeout' => 10,
         ];
-        if(isset($headers['Content-Type']) && $headers['Content-Type'] == 'application/json'){
-            $options['json'] = json_decode($body, true);
+        $json_content = false;
+        $form_content = true;
+
+        if (isset($headers) && is_array($headers)) {
+            foreach ($headers as $h => $v) {
+                $h = strtolower($h);
+                $v = strtolower($v);
+
+                if ($h == "content-type") {
+                    $json_content = $v == "application/json";
+                    $form_content = $v == "application/x-www-form-urlencoded";
+                }
+            }
         }
+
+        if($json_content){
+            $content = json_decode($body, true);
+            if(function_exists('json_last_error')) {
+                $json_error = json_last_error();
+                if ($json_error != JSON_ERROR_NONE) {
+                    throw new HttpClientException("JSON Error [{$json_error}] - Data: ".$body);
+                }
+            }
+            $options['json'] = $content;
+        }else if ($form_content) {
+            parse_str($body, $content);
+            $options['form_params'] = $content;
+        }
+
         try {
             $rawResponse = $this->guzzleClient->request($method, $url, $options);
         } catch (RequestException $e) {

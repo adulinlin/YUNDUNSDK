@@ -40,6 +40,9 @@ class YunDunCurlHttpClient implements YunDunHttpClientInterface{
      */
     public function send($url, $method, $body, array $headers, $timeOut)
     {
+        if($body && !is_string($body)){
+            throw new HttpClientException('curl body must be string');
+        }
         $this->openConnection($url, $method, $body, $headers, $timeOut);
         $this->sendRequest();
         if ($curlErrorCode = $this->yunDunCurl->errno()) {

@@ -14,7 +14,7 @@ interface YunDunHttpClientInterface{
      *
      * @param string $url     The endpoint to send the request to.
      * @param string $method  The request method.
-     * @param string $body    The body of the request.
+     * @param string $body    The body of the request. [http_build_query string | json string]
      * @param array  $headers The request headers.
      * @param int    $timeOut The timeout in seconds for the request.
      *
