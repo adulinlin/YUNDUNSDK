@@ -10,20 +10,50 @@
 1.	composer require yundun/yundunsdk dev-master
  
 2.	实例化
-//sdk
-require 'xx/vendor/autoload.php';
-$app_id = 'xx';
-$app_secret = 'xx';
-$client_ip = 'xx';
-$client_userAgent = $_SERVER['HTTP_USER_AGENT'];
-$sdk = new YundunSDK (array('app_id'=>$app_id, 'app_secret'=>$app_secret, 'client_ip'=>$client_ip, 'client_userAgent'=>$client_userAgent);
+```
+    //sdk
+    require 'xx/vendor/autoload.php';
+    $app_id = 'xx';
+    $app_secret = 'xx';
+    $client_ip = 'xx';
+    $client_userAgent = '';
+    $base_api_url = 'http://api.yundun.cn/V1/';
+    $sdk = new YundunSDK (array('app_id'=>$app_id, 'app_secret'=>$app_secret, 'client_ip'=>$client_ip, 'client_userAgent'=>$client_userAgent);
 
+```
 
 3. 调用
-$payload = array(); //请求参数
-$sdk->api_call('xxxrequrl', $payload, true, $method = 'POST', $headers = array(), $timeOut = '');
-第三个参数 true返回数组，false返回json数据
 
+> format json返回json，xml返回xml
+> body 支持传递json和数组
+> urlParams会拼接在url后面
+> 支持get/post/patch/put/delete方法
+
+```
+$request = array(
+    'url' => 'test.version',
+    'body' => json_encode([
+        'body1' => 1,
+        'body2' => 3,
+    ]),
+    'headers' => [
+        'format' => 'json',
+    ],
+    'timeOut' => 10,
+    'urlParams' => [
+        'params1' => 1,
+        'params2' => 2
+    ],
+);
+try{
+    $res = $sdk->put($request);
+}catch (\Exception $e){
+    var_dump($e->getCode());
+    var_dump($e->getMessage());
+}
+exit($res);
+
+```
 
       
 ###获取单个域名信息
@@ -32,10 +62,10 @@ $sdk->api_call('xxxrequrl', $payload, true, $method = 'POST', $headers = array()
           
 请求参数：
 ```
-     {
-        "user_id" : "9281", //代理下线用户id,仅操作自己的下线时候需要传递 [可选]
-        "domain": "xxx",
-     }
+    {
+    "user_id" : "9281", //代理下线用户id,仅操作自己的下线时候需要传递 [可选]
+    "domain": "xxx",
+    }
 ```         
 返回值：
 
