@@ -24,10 +24,13 @@
 
 3. 调用
 
-> format json返回json，xml返回xml
-> body 支持传递json和数组
-> urlParams会拼接在url后面
-> 支持get/post/patch/put/delete方法
+>   format json返回json，xml返回xml
+
+>   body 支持传递json和数组
+
+>   urlParams会拼接在url后面
+
+>   支持get/post/patch/put/delete方法
 
 ```
 $request = array(
