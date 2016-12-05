@@ -1,0 +1,14 @@
+<?php
+
+namespace YunDunSdk\Exceptions;
+
+class ExceptionCodeMsg{
+
+    //HttpLib/isCorrectJson
+    const CODE_HTTP_LIB_CODE_IS_CORRECT_JSON_1 = 7001;
+    const MSG_HTTP_LIB_CODE_IS_CORRECT_JSON_1 = 'body must be string';
+
+    //YunDunSdk
+    const CODE_YUNDUNSDK_BUILD_REQUEST_1 = 8001;
+    const MSG_YUNDUNSDK_BUILD_REQUEST_1 = 'body must be string or array';
+}

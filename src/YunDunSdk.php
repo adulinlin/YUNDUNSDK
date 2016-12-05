@@ -14,6 +14,8 @@ use GuzzleHttp\Exception\RequestException;
 use YunDunSdk\SignRequest\SignedRequest;
 use YunDunSdk\HttpClients\HttpClientsFactory;
 use YunDunSdk\Http\RawRequest;
+use YunDunSdk\Http\HttpLib;
+use YunDunSdk\Exceptions\ExceptionCodeMsg;
 
 class YunDunSdk
 {
@@ -41,15 +43,24 @@ class YunDunSdk
         $this->base_api_url = isset($param['base_api_url']) && !empty($param['base_api_url']) ? $param['base_api_url'] : self::__BASE_API_URL__;
         $this->request = new RawRequest('', '', array(), null, 10, array());
         $this->request->setBaseApiUrl($this->base_api_url);
-        $this->http_client_handler = HttpClientsFactory::createHttpClient($param['http_client_handler'] ?: null);
+        $this->http_client_handler = HttpClientsFactory::createHttpClient($param['http_client_handler'] ?: '');
     }
 
     //sign request
     public function signedRequest(RawRequest $request)
     {
-        $payload = $request->getBody();
+        if($request->getBodyType() == 'json'){
+            $payload['body'] = $request->getBody();
+            $body = $request->getBody();
+            $this->request->setHeader('request-data-type', 'json');
+        }else if($request->getBodyType() == 'array'){
+            $payload['body'] = $request->getBody();
+            $body = RawRequest::build_query($payload);
+            $this->request->setHeader('request-data-type', 'array');
+        }
         if (strtoupper($request->getMethod()) == 'GET') {
-            $payload = $request->getUrlParams();
+            $payload['body'] = $request->getUrlParams();
+            $body = RawRequest::build_query($payload);
         }
 
         //签名
@@ -60,25 +71,7 @@ class YunDunSdk
         $method = $request->getMethod();
         $headers = $request->getHeaders();
         $timeOut = $request->getTimeOut();
-        $json_content = false;
-        $form_content = true;
 
-        if (isset($headers) && is_array($headers)) {
-            foreach ($headers as $h => $v) {
-                $h = strtolower($h);
-                $v = strtolower($v);
-
-                if ($h == "content-type") {
-                    $json_content = $v == "application/json";
-                    $form_content = $v == "application/x-www-form-urlencoded";
-                }
-            }
-        }
-        if($json_content){
-            $body = json_encode($payload);
-        }else if ($form_content) {
-            $body = http_build_query($payload);
-        }
         $RawResponse = $this->http_client_handler->send($url, $method, $body, $headers, $timeOut);
         return $RawResponse;
     }
@@ -104,10 +97,27 @@ class YunDunSdk
             'client_userAgent' => $this->client_userAgent,
             'fromadmin' => $_SESSION['fromadmin'],
         ];
-        $request['body'] = array_merge($defaultData, $request['body']);
+
+
+        if(is_string($request['body']) && HttpLib::isCorrectJson($request['body'])){
+            $request['body'] = array_merge($defaultData, json_decode($request['body'], true));
+            $request['body'] = json_encode($request['body']);
+            if (strtoupper($request['method']) == 'GET') {
+                $request['body'] = '';
+            }
+            $this->request->setBodyType('json');
+        }else if(is_array($request['body'])){
+            $request['body'] = array_merge($defaultData, $request['body']);
+            if (strtoupper($request['method']) == 'GET') {
+                $request['body'] = array();
+            }
+            $this->request->setBodyType('array');
+        }else{
+            throw new YunDunSdkException(ExceptionCodeMsg::MSG_YUNDUNSDK_BUILD_REQUEST_1, ExceptionCodeMsg::CODE_YUNDUNSDK_BUILD_REQUEST_1);
+        }
+
         if (strtoupper($request['method']) == 'GET') {
             $request['urlParams'] = array_merge($defaultData, $request['urlParams']);
-            $request['body'] = array();
         }
 
         $this->request->setBody($request['body']);
@@ -127,7 +137,7 @@ class YunDunSdk
     {
 //        $request = array(
 //            'url' => '',
-//            'body' => [],
+//            'body' => []/json,
 //            'method' => '',
 //            'headers' => [],
 //            'timeOut' => 10,
@@ -138,10 +148,15 @@ class YunDunSdk
         try {
             $rawResponse = $this->signedRequest($httpRequest);
         } catch (HttpClientException $e) {
+            echo $e->getMessage();
         } catch (RequestException $e) {
+            echo $e->getMessage();
         } catch (InvalidArgumentException $e) {
+            echo $e->getMessage();
         } catch (Exception $e) {
+            echo $e->getMessage();
         }
+
         return $rawResponse->getBody();
     }
 

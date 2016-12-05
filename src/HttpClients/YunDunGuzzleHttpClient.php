@@ -13,6 +13,8 @@ use YunDunSdk\Http\RawResponse;
 use GuzzleHttp\Client;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\RequestException;
+use YunDunSdk\Http\HttpLib;
+use GuzzleHttp\Middleware;
 
 class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
     /**
@@ -39,31 +41,10 @@ class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
             'timeout' => $timeOut,
             'connect_timeout' => 10,
         ];
-        $json_content = false;
-        $form_content = true;
 
-        if (isset($headers) && is_array($headers)) {
-            foreach ($headers as $h => $v) {
-                $h = strtolower($h);
-                $v = strtolower($v);
-
-                if ($h == "content-type") {
-                    $json_content = $v == "application/json";
-                    $form_content = $v == "application/x-www-form-urlencoded";
-                }
-            }
-        }
-
-        if($json_content){
-            $content = json_decode($body, true);
-            if(function_exists('json_last_error')) {
-                $json_error = json_last_error();
-                if ($json_error != JSON_ERROR_NONE) {
-                    throw new HttpClientException("JSON Error [{$json_error}] - Data: ".$body);
-                }
-            }
-            $options['json'] = $content;
-        }else if ($form_content) {
+        if(HttpLib::isCorrectJson($body)){
+            $options['json'] = json_decode($body, true);
+        }else{
             parse_str($body, $content);
             $options['form_params'] = $content;
         }
@@ -80,6 +61,7 @@ class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
         $rawBody = $rawResponse->getBody();
         $httpStatusCode = $rawResponse->getStatusCode();
         return new RawResponse($rawHeaders, $rawBody, $httpStatusCode);
+
     }
     /**
      * Returns the Guzzle array of headers as a string.

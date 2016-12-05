@@ -12,6 +12,7 @@ class RawRequest
     protected $base_api_url;
     protected $timeout;
     protected $urlParams;
+    protected $body_type;
 
 
     public function __construct($method = '', $url = '', array $headers = array(), $body = null, $timeout = 10, $urlParams = array())
@@ -152,7 +153,7 @@ class RawRequest
      * @link
      * @desc
      */
-    private static function build_query($params) {
+    public static function build_query($params) {
         if (function_exists("http_build_query")) {
             return http_build_query($params, "", "&");
         } else {
@@ -197,6 +198,14 @@ class RawRequest
      */
     public function getMethod(){
         return $this->method;
+    }
+
+    public function setBodyType($type){
+        $this->body_type = strtolower($type);
+    }
+
+    public function getBodyType(){
+        return $this->body_type;
     }
 
 
