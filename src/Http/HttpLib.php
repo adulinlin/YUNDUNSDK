@@ -17,9 +17,12 @@ class HttpLib{
         if(!is_string($body)){
             throw new YunDunSdkException(ExceptionCodeMsg::MSG_HTTP_LIB_CODE_IS_CORRECT_JSON_1, ExceptionCodeMsg::CODE_HTTP_LIB_CODE_IS_CORRECT_JSON_1);
         }
-        json_decode($body, true);
+        $content = json_decode($body, true);
         $json_error = json_last_error();
-        return $json_error == JSON_ERROR_NONE;
+        if($json_error == JSON_ERROR_NONE){
+            return $content;
+        }
+        return false;
     }
 
 

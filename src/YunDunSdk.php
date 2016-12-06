@@ -43,7 +43,7 @@ class YunDunSdk
         $this->base_api_url = isset($param['base_api_url']) && !empty($param['base_api_url']) ? $param['base_api_url'] : self::__BASE_API_URL__;
         $this->request = new RawRequest('', '', array(), null, 10, array());
         $this->request->setBaseApiUrl($this->base_api_url);
-        $this->http_client_handler = HttpClientsFactory::createHttpClient($param['http_client_handler'] ?: '');
+        $this->http_client_handler = HttpClientsFactory::createHttpClient($param['http_client_handler'] ?: 'curl');
     }
 
     //sign request
@@ -52,11 +52,9 @@ class YunDunSdk
         if($request->getBodyType() == 'json'){
             $payload['body'] = $request->getBody();
             $body = $request->getBody();
-            $this->request->setHeader('request-data-type', 'json');
         }else if($request->getBodyType() == 'array'){
             $payload['body'] = $request->getBody();
             $body = RawRequest::build_query($payload);
-            $this->request->setHeader('request-data-type', 'array');
         }
         if (strtoupper($request->getMethod()) == 'GET') {
             $payload['body'] = $request->getUrlParams();
@@ -65,8 +63,8 @@ class YunDunSdk
 
         //签名
         $sign = SignedRequest::make($payload, $this->app_secret);
-        $this->request->setHeader('sign', $sign);
-        $this->request->setHeader('app_id', $this->app_id);
+        $this->request->setHeader('X-Auth-Sign', $sign);
+        $this->request->setHeader('X-Auth-App-Id', $this->app_id);
         $url = $request->getUrl();
         $method = $request->getMethod();
         $headers = $request->getHeaders();
@@ -83,10 +81,10 @@ class YunDunSdk
             'body' => [],
             'method' => 'GET',
             'headers' => [
-                'format' => 'json'
+                'format' => 'json',
             ],
             'timeOut' => 10,
-            'urlParams' => [],
+            'query' => [],
             'returnArr' => false
         ];
         $request = array_merge($defaultRequest, $request);
@@ -99,25 +97,30 @@ class YunDunSdk
         ];
 
 
-        if(is_string($request['body']) && HttpLib::isCorrectJson($request['body'])){
-            $request['body'] = array_merge($defaultData, json_decode($request['body'], true));
+        if(is_string($request['body'])){
+            if(!($json_decode_content = HttpLib::isCorrectJson($request['body']))){
+                throw new YunDunSdkException(ExceptionCodeMsg::MSG_YUNDUNSDK_BUILD_REQUEST_2, ExceptionCodeMsg::CODE_YUNDUNSDK_BUILD_REQUEST_2);
+            }
+            $request['body'] = array_merge($defaultData, $json_decode_content);
             $request['body'] = json_encode($request['body']);
             if (strtoupper($request['method']) == 'GET') {
                 $request['body'] = '';
             }
             $this->request->setBodyType('json');
+            $request['headers']['Content-Type'] = 'application/json';
         }else if(is_array($request['body'])){
             $request['body'] = array_merge($defaultData, $request['body']);
             if (strtoupper($request['method']) == 'GET') {
                 $request['body'] = array();
             }
             $this->request->setBodyType('array');
+            $request['headers']['Content-Type'] = 'application/x-www-form-urlencoded';
         }else{
             throw new YunDunSdkException(ExceptionCodeMsg::MSG_YUNDUNSDK_BUILD_REQUEST_1, ExceptionCodeMsg::CODE_YUNDUNSDK_BUILD_REQUEST_1);
         }
 
         if (strtoupper($request['method']) == 'GET') {
-            $request['urlParams'] = array_merge($defaultData, $request['urlParams']);
+            $request['query'] = array_merge($defaultData, $request['query']);
         }
 
         $this->request->setBody($request['body']);
@@ -127,7 +130,7 @@ class YunDunSdk
         $this->request->setHeaders($request['headers']);
         isset($_SERVER['HTTP_SOCKETLOG']) && $this->request->setHeader('Socketlog', $_SERVER['HTTP_SOCKETLOG']);
         isset($_SERVER['HTTP_USER_AGENT']) && $this->request->setHeader('User-Agent', $_SERVER['HTTP_USER_AGENT']);
-        $this->request->setUrlParams($request['urlParams']);
+        $this->request->setUrlParams($request['query']);
 
         return $this->request;
     }
@@ -141,7 +144,7 @@ class YunDunSdk
 //            'method' => '',
 //            'headers' => [],
 //            'timeOut' => 10,
-//            'urlParams' => [],
+//            'query' => [],
 //        );
 
         $httpRequest = $this->build_request($request);

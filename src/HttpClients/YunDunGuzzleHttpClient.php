@@ -15,6 +15,7 @@ use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\RequestException;
 use YunDunSdk\Http\HttpLib;
 use GuzzleHttp\Middleware;
+use YunDunSdk\Exceptions\ExceptionCodeMsg;
 
 class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
     /**
@@ -42,11 +43,13 @@ class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
             'connect_timeout' => 10,
         ];
 
-        if(HttpLib::isCorrectJson($body)){
+        if(isset($headers['Content-Type']) && $headers['Content-Type'] == 'application/json'){
             $options['json'] = json_decode($body, true);
-        }else{
+        }else if(isset($headers['Content-Type']) && $headers['Content-Type'] == 'application/x-www-form-urlencoded'){
             parse_str($body, $content);
             $options['form_params'] = $content;
+        }else{
+            throw new HttpClientException(ExceptionCodeMsg::MSG_YUNDUNGUZZLEHTTPCLIENT_SEND_1, ExceptionCodeMsg::CODE_YUNDUNGUZZLEHTTPCLIENT_SEND_1);
         }
 
         try {
