@@ -13,6 +13,7 @@ class RawRequest
     protected $timeout;
     protected $urlParams;
     protected $body_type;
+    protected $options;
 
 
     public function __construct($method = '', $url = '', array $headers = array(), $body = null, $timeout = 10, $urlParams = array())
@@ -206,6 +207,14 @@ class RawRequest
 
     public function getBodyType(){
         return $this->body_type;
+    }
+
+    public function setOptions($options){
+        $this->options = $options;
+    }
+
+    public function getOptions(){
+        return $this->options;
     }
 
 

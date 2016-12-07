@@ -38,20 +38,22 @@ class YunDunCurlHttpClient implements YunDunHttpClientInterface{
     /**
      * @inheritdoc
      */
-    public function send($url, $method, $body, array $headers, $timeOut)
+    public function send($url, $method, $body, array $headers, $timeOut, $otherOptions = [])
     {
         if($body && !is_string($body)){
             throw new HttpClientException('curl body must be string');
         }
         $this->openConnection($url, $method, $body, $headers, $timeOut);
         $this->sendRequest();
+        //todo async request
         if ($curlErrorCode = $this->yunDunCurl->errno()) {
             throw new HttpClientException($this->yunDunCurl->error(), $curlErrorCode);
         }
         // Separate the raw headers from the raw body
         list($rawHeaders, $rawBody) = $this->extractResponseHeadersAndBody();
+        $httpStatusCode = $this->yunDunCurl->getinfo(CURLINFO_HTTP_CODE);
         $this->closeConnection();
-        return new RawResponse($rawHeaders, $rawBody);
+        return new RawResponse($rawHeaders, $rawBody, $httpStatusCode);
     }
     /**
      * Opens a new curl connection.

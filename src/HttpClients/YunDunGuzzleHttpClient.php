@@ -32,7 +32,7 @@ class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
     /**
      * @inheritdoc
      */
-    public function send($url, $method, $body, array $headers, $timeOut)
+    public function send($url, $method, $body, array $headers, $timeOut, $otherOptions = [])
     {
         if($body && !is_string($body)){
             throw new HttpClientException('guzzle body must be string');
@@ -50,6 +50,17 @@ class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
             $options['form_params'] = $content;
         }else{
             throw new HttpClientException(ExceptionCodeMsg::MSG_YUNDUNGUZZLEHTTPCLIENT_SEND_1, ExceptionCodeMsg::CODE_YUNDUNGUZZLEHTTPCLIENT_SEND_1);
+        }
+
+        if(isset($otherOptions['async']) && $otherOptions['async']){
+            $callback = $otherOptions['callback']?:function(){};
+            $exception = $otherOptions['exception']?:function(){};
+            $promise = $this->guzzleClient->requestAsync($method, $url, $options);
+            $promise->then(
+                $callback,
+                $exception
+            )->wait();
+            return 'asyncRequest';
         }
 
         try {
