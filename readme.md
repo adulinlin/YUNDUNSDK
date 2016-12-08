@@ -1,6 +1,6 @@
 # YUNDUN API PHP SDK legend
 
-+	接口基地址： 'http://api.yundun.cn/V1/';
++	接口基地址： 'http://apiv4.yundun.cn/V4/';
 +	接口遵循RESTful,默认请求体json,接口默认返回json
 +	app_id, app_secret 联系技术客服，先注册一个云盾的账号，用于申请绑定api身份
 
@@ -10,6 +10,7 @@
 1.	composer require yundun/yundunsdk dev-master
  
 2.	实例化
+
 ```
     //sdk
     require 'xx/vendor/autoload.php';
@@ -17,7 +18,7 @@
     $app_secret = 'xx';
     $client_ip = 'xx';
     $client_userAgent = '';
-    $base_api_url = 'http://api.yundun.cn/V1/';
+    $base_api_url = 'http://apiv4.yundun.cn/V4/';
     $handler = 'guzzle'; //curl/guzzle默认guzzle,guzzle支持异步调用，curl驱动目前未实现异步
     $sdk = new YundunSDK ([
         'app_id'=>$app_id, 
@@ -38,6 +39,8 @@
 
 >   支持get/post/patch/put/delete方法
 
+
+## sync request
 
 + get
 

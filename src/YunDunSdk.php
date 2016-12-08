@@ -113,6 +113,15 @@ class YunDunSdk
             'fromadmin' => $_SESSION['fromadmin'],
         ];
 
+        foreach ($request["headers"] as $h => $v) {
+            $hs = strtolower($h);
+            $vs = strtolower($v);
+
+            if ($hs == "content-type") {
+                unset($request['headers'][$h]);
+                $request["headers"]['Content-Type'] = $vs;
+            }
+        }
 
         if(is_string($request['body'])){
             if(!($json_decode_content = HttpLib::isCorrectJson($request['body']))){
