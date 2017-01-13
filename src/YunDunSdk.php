@@ -36,15 +36,15 @@ class YunDunSdk
         if (!is_array($param)) {
             throw new YunDunSdkException('param must be array');
         }
-        $this->app_id = $param['app_id'];
-        $this->app_secret = $param['app_secret'];
-        $this->user_id = (int)$param['user_id'];
-        $this->client_ip = isset($param['client_ip']) ? trim($param['client_ip']) : '';
+        $this->app_id           = $param['app_id'];
+        $this->app_secret       = $param['app_secret'];
+        $this->user_id          = (int)$param['user_id'];
+        $this->client_ip        = isset($param['client_ip']) ? trim($param['client_ip']) : '';
         $this->client_userAgent = isset($param['client_userAgent']) ? trim($param['client_userAgent']) : '';
-        $this->base_api_url = isset($param['base_api_url']) && !empty($param['base_api_url']) ? $param['base_api_url'] : self::__BASE_API_URL__;
-        $this->request = new RawRequest('', '', array(), null, 10, array());
+        $this->base_api_url     = isset($param['base_api_url']) && !empty($param['base_api_url']) ? $param['base_api_url'] : self::__BASE_API_URL__;
+        $this->request          = new RawRequest('', '', array(), null, 10, array());
         $this->request->setBaseApiUrl($this->base_api_url);
-        $handler = isset($param['handler'])?$param['handler']:'';
+        $handler                   = isset($param['handler']) ? $param['handler'] : '';
         $this->http_client_handler = HttpClientsFactory::createHttpClient($handler);
     }
 
@@ -57,24 +57,24 @@ class YunDunSdk
      */
     public function signedRequest(RawRequest $request)
     {
-        if($request->getBodyType() == 'json'){
+        if ($request->getBodyType() == 'json') {
             $payload['body'] = $request->getBody();
-            $body = $request->getBody();
-        }else if($request->getBodyType() == 'array'){
+            $body            = $request->getBody();
+        } else if ($request->getBodyType() == 'array') {
             $payload['body'] = $request->getBody();
-            $body = RawRequest::build_query($payload);
+            $body            = RawRequest::build_query($payload);
         }
         if (strtoupper($request->getMethod()) == 'GET') {
             $payload['body'] = $request->getUrlParams();
-            $body = RawRequest::build_query($payload);
+            $body            = RawRequest::build_query($payload);
         }
 
         //签名
         $sign = SignedRequest::make($payload, $this->app_secret);
         $this->request->setHeader('X-Auth-Sign', $sign);
         $this->request->setHeader('X-Auth-App-Id', $this->app_id);
-        $url = $request->getUrl();
-        $method = $request->getMethod();
+        $url     = $request->getUrl();
+        $method  = $request->getMethod();
         $headers = $request->getHeaders();
         $timeOut = $request->getTimeOut();
         $options = $request->getOptions();
@@ -94,23 +94,23 @@ class YunDunSdk
     private function build_request($request)
     {
         $defaultRequest = [
-            'url' => '',
-            'body' => [],
-            'method' => 'GET',
+            'url'     => '',
+            'body'    => [],
+            'method'  => 'GET',
             'headers' => [
                 'format' => 'json',
             ],
             'timeout' => 10,
-            'query' => [],
+            'query'   => [],
             'options' => []
         ];
-        $request = array_merge($defaultRequest, $request);
+        $request        = array_merge($defaultRequest, $request);
 
         $defaultData = [
-            'user_id' => $this->user_id,
-            'client_ip' => $this->client_ip,
+            'user_id'          => $this->user_id,
+            'client_ip'        => $this->client_ip,
             'client_userAgent' => $this->client_userAgent,
-            'fromadmin' => $_SESSION['fromadmin'],
+            'fromadmin'        => isset($_SESSION['fromadmin']) ? isset($_SESSION['fromadmin']) : null,
         ];
 
         foreach ($request["headers"] as $h => $v) {
@@ -123,8 +123,8 @@ class YunDunSdk
             }
         }
 
-        if(is_string($request['body'])){
-            if(!($json_decode_content = HttpLib::isCorrectJson($request['body']))){
+        if (is_string($request['body'])) {
+            if (!($json_decode_content = HttpLib::isCorrectJson($request['body']))) {
                 throw new YunDunSdkException(ExceptionCodeMsg::MSG_YUNDUNSDK_BUILD_REQUEST_2, ExceptionCodeMsg::CODE_YUNDUNSDK_BUILD_REQUEST_2);
             }
             $request['body'] = array_merge($defaultData, $json_decode_content);
@@ -134,14 +134,14 @@ class YunDunSdk
             }
             $this->request->setBodyType('json');
             $request['headers']['Content-Type'] = 'application/json';
-        }else if(is_array($request['body'])){
+        } else if (is_array($request['body'])) {
             $request['body'] = array_merge($defaultData, $request['body']);
             if (strtoupper($request['method']) == 'GET') {
                 $request['body'] = array();
             }
             $this->request->setBodyType('array');
             $request['headers']['Content-Type'] = 'application/x-www-form-urlencoded';
-        }else{
+        } else {
             throw new YunDunSdkException(ExceptionCodeMsg::MSG_YUNDUNSDK_BUILD_REQUEST_1, ExceptionCodeMsg::CODE_YUNDUNSDK_BUILD_REQUEST_1);
         }
 
@@ -149,9 +149,9 @@ class YunDunSdk
             $request['query'] = array_merge($defaultData, $request['query']);
         }
 
-        if(isset($request['options']['async']) && $request['options']['async']){
-            $request['options']['callback'] = isset($request['options']['callback'])?$request['options']['callback']:array($this, 'async_callback');
-            $request['options']['exception'] = isset($request['options']['exception'])?$request['options']['exception']:array($this, 'async_callback_exception');
+        if (isset($request['options']['async']) && $request['options']['async']) {
+            $request['options']['callback']  = isset($request['options']['callback']) ? $request['options']['callback'] : array($this, 'async_callback');
+            $request['options']['exception'] = isset($request['options']['exception']) ? $request['options']['exception'] : array($this, 'async_callback_exception');
         }
 
         $this->request->setBody($request['body']);
@@ -194,99 +194,128 @@ class YunDunSdk
         $httpRequest = $this->build_request($request);
         try {
             $rawResponse = $this->signedRequest($httpRequest);
+            if (isset($request['options']['async']) && $request['options']['async']) {
+                return json_encode([
+                    'status' => [
+                        'code'    => 1,
+                        'message' => $rawResponse
+                    ]
+                ]);
+            }
+            $body     = $rawResponse->getBody();
+            $contents = $body->getContents();
+            
+            return $contents;
         } catch (HttpClientException $e) {
-            echo $e->getMessage();
+            HttpLib::logSdk(__FUNCTION__ . $e->getMessage());
         } catch (RequestException $e) {
-            echo $e->getMessage();
+            HttpLib::logSdk(__FUNCTION__ . $e->getMessage());
         } catch (InvalidArgumentException $e) {
-            echo $e->getMessage();
-        } catch (Exception $e) {
-            echo $e->getMessage();
+            HttpLib::logSdk(__FUNCTION__ . $e->getMessage());
+        } catch (\Exception $e) {
+            HttpLib::logSdk(__FUNCTION__ . $e->getMessage());
         }
-
-        return $rawResponse->getBody();
     }
 
 
-    public  function get($request) {
+    public function get($request)
+    {
         $request["method"] = "GET";
 
         return $this->api_call($request);
     }
 
-    public  function post($request) {
+    public function post($request)
+    {
         $request["method"] = "POST";
 
         return $this->api_call($request);
     }
 
-    public  function put($request) {
+    public function put($request)
+    {
         $request["method"] = "PUT";
 
         return $this->api_call($request);
     }
 
-    public  function patch($request) {
+    public function patch($request)
+    {
         $request["method"] = "PATCH";
 
         return $this->api_call($request);
     }
 
-    public  function delete($request) {
+    public function delete($request)
+    {
         $request["method"] = "DELETE";
 
         return $this->api_call($request);
     }
 
-    public  function getAsync($request) {
-        $request["method"] = "GET";
+    public function getAsync($request)
+    {
+        $request["method"]           = "GET";
+        $request['options']['async'] = true;
+        return $this->api_call($request);
+    }
+
+    public function postAsync($request)
+    {
+        $request["method"]           = "POST";
         $request['options']['async'] = true;
 
         return $this->api_call($request);
     }
 
-    public  function postAsync($request) {
-        $request["method"] = "POST";
+    public function putAsync($request)
+    {
+        $request["method"]           = "PUT";
         $request['options']['async'] = true;
 
         return $this->api_call($request);
     }
 
-    public  function putAsync($request) {
-        $request["method"] = "PUT";
+    public function patchAsync($request)
+    {
+        $request["method"]           = "PATCH";
         $request['options']['async'] = true;
 
         return $this->api_call($request);
     }
 
-    public  function patchAsync($request) {
-        $request["method"] = "PATCH";
+    public function deleteAsync($request)
+    {
+        $request["method"]           = "DELETE";
         $request['options']['async'] = true;
 
         return $this->api_call($request);
     }
 
-    public  function deleteAsync($request) {
-        $request["method"] = "DELETE";
-        $request['options']['async'] = true;
-
-        return $this->api_call($request);
-    }
-
-    public function async_callback($response){
+    public function async_callback($response)
+    {
         $body = $response->getBody()->getContents();
         echo $body;
         exit;
     }
 
-    public function async_callback_exception($e){
+    public function async_callback_exception($e)
+    {
         $message = $e->getMessage();
-        $method = $e->getRequest()->getMethod();
-        if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN'){
-            error_log('async_callbck_exception,message:'.$message.',method:'.$method, 3, '/var/tmp/api_async_call_errors.log');
-        }else{
-            error_log('async_callbck_exception,message:'.$message.',method:'.$method, 3, 'E:/api_async_call_errors.log');
-        }
+        $method  = $e->getRequest()->getMethod();
+        HttpLib::logSdk(__FUNCTION__ . 'message:' . $message . ',method:' . $method);
+    }
+
+    /**
+     * @param $value
+     * @param string $logFile
+     * @node_name
+     * @link
+     * @desc
+     */
+    public function log($value, $logFile = '')
+    {
+        HttpLib::logSdk($value, $logFile);
     }
 
 

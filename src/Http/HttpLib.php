@@ -26,4 +26,50 @@ class HttpLib{
     }
 
 
+    // windows系统
+    public static function isWin()
+    {
+        if (strtoupper(substr(PHP_OS, 0, 3)) == 'WIN') {
+            return true;
+        }
+        return false;
+    }
+
+
+    //获取当前时间
+    public static function getCurDateTime($format = 'Y-m-d H:i:s')
+    {
+        return date($format);
+    }
+
+
+    /**
+     * @param $value
+     * @param string $logFile
+     * @node_name
+     * @link
+     * @desc
+     */
+    public static function logSdk($value, $logFile = '')
+    {
+        if (self::isWin()) {
+            $file = 'E:/sdkV4.log';
+        } else {
+            $file = '/tmp/sdkV4.log';
+        }
+        if(!empty($logFile) && file_exists(dirname($logFile))){
+            $file = $logFile;
+        }
+        if (is_array($value)) {
+            file_put_contents($file, self::getCurDateTime() . ':' . print_r($value, true) . "\n", FILE_APPEND);
+        } else if (is_string($value)) {
+            file_put_contents($file, self::getCurDateTime() . ':' . $value . "\n", FILE_APPEND);
+        } else if (is_numeric($value)) {
+            file_put_contents($file, self::getCurDateTime() . ':' . $value . "\n", FILE_APPEND);
+        }else if(is_object($value)){
+            file_put_contents($file, self::getCurDateTime() . ':' . print_r($value, true) . "\n", FILE_APPEND);
+        }
+    }
+
+
 }
