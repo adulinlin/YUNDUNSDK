@@ -295,6 +295,15 @@ class YunDunSdk
     public function async_callback($response)
     {
         $body = $response->getBody()->getContents();
+        if(isset($this->request->getHeaders()['format'])){
+            if('json' == strtolower($this->request->getHeaders()['format'])){
+                header('Content-Type:application/json; charset=utf-8');
+            }else{
+                header('Content-Type:text/xml; charset=utf-8');
+            }
+        }else{
+            header('Content-Type:application/json; charset=utf-8');
+        }
         echo $body;
         exit;
     }
