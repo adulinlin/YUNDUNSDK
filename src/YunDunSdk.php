@@ -124,7 +124,8 @@ class YunDunSdk
         }
 
         if (is_string($request['body'])) {
-            if (!($json_decode_content = HttpLib::isCorrectJson($request['body']))) {
+            $json_decode_content = HttpLib::isCorrectJson($request['body']);
+            if (false === $json_decode_content) {
                 throw new YunDunSdkException(ExceptionCodeMsg::MSG_YUNDUNSDK_BUILD_REQUEST_2, ExceptionCodeMsg::CODE_YUNDUNSDK_BUILD_REQUEST_2);
             }
             $request['body'] = array_merge($defaultData, $json_decode_content);
