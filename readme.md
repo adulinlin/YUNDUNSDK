@@ -7,8 +7,8 @@
 +   环境要求：php >=5.5
          
 ##使用步骤
-1.	composer require yundun/yundunsdk dev-master
- 
+1.	composer require yundun/yundunsdk
+
 2.	实例化
 
 ```
@@ -20,12 +20,19 @@
     $client_userAgent = '';
     $base_api_url = 'http://apiv4.yundun.cn/V4/';
     $handler = 'guzzle'; //curl/guzzle默认guzzle,guzzle支持异步调用，curl驱动目前未实现异步
-    $sdk = new YundunSDK ([
+    $sdk = new YundunSDK (
+        [
         'app_id'=>$app_id, 
         'app_secret'=>$app_secret, 
         'client_ip'=>$client_ip, 
         'client_userAgent'=>$client_userAgent, 
-        'handler'=> $handler]);
+        'handler'=> $handler,
+        'syncExceptionOutputCode' => 0,
+        'syncExceptionOutputMessage' =>'同步请求异常信息提示',
+        'asyncExceptionOutputCode' => 0,
+        'asyncExceptionOutputMessage' => '异步请求异常信息提示'
+        ]
+    );
 
 ```
 
