@@ -60,7 +60,6 @@ class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
                 $callback,
                 $exception
             )->wait();
-            return 'asyncRequest';
         }
 
         try {

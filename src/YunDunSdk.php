@@ -1,4 +1,5 @@
 <?php
+
 namespace YunDunSdk;
 
 /**
@@ -10,12 +11,12 @@ namespace YunDunSdk;
 use YunDunSdk\Exceptions\YunDunSdkException;
 use YunDunSdk\Exceptions\HttpClientException;
 use InvalidArgumentException;
-use Exception;
 use GuzzleHttp\Exception\RequestException;
 use YunDunSdk\SignRequest\SignedRequest;
 use YunDunSdk\HttpClients\HttpClientsFactory;
 use YunDunSdk\Http\RawRequest;
 use YunDunSdk\Http\HttpLib;
+use YunDunSdk\Http\HttpOutput;
 use YunDunSdk\Exceptions\ExceptionCodeMsg;
 
 class YunDunSdk
@@ -30,6 +31,14 @@ class YunDunSdk
     private $base_api_url; //api base url
     private $http_client_handler; //http client handler
     private $request; //request 对象
+    private $syncExceptionOutput  = [
+        'code'    => 0,
+        'message' => '同步请求异常！请稍后重试！或者联系技术支持！'
+    ];
+    private $asyncExceptionOutput = [
+        'code'    => 0,
+        'message' => '异步请求异常！请稍后重试！或者联系技术支持！'
+    ];
 
     public function __construct($param)
     {
@@ -42,6 +51,18 @@ class YunDunSdk
         $this->client_ip        = isset($param['client_ip']) ? trim($param['client_ip']) : '';
         $this->client_userAgent = isset($param['client_userAgent']) ? trim($param['client_userAgent']) : '';
         $this->base_api_url     = isset($param['base_api_url']) && !empty($param['base_api_url']) ? $param['base_api_url'] : self::__BASE_API_URL__;
+        if(isset($param['syncExceptionOutputCode'])){
+            $this->syncExceptionOutput['code'] = $param['syncExceptionOutputCode'];
+        }
+        if(isset($param['syncExceptionOutputMessage'])){
+            $this->syncExceptionOutput['message'] = $param['syncExceptionOutputMessage'];
+        }
+        if(isset($param['asyncExceptionOutputCode'])){
+            $this->asyncExceptionOutput['code'] = $param['asyncExceptionOutputCode'];
+        }
+        if(isset($param['asyncExceptionOutputMessage'])){
+            $this->asyncExceptionOutput['message'] = $param['asyncExceptionOutputMessage'];
+        }
         $this->request          = new RawRequest('', '', array(), null, 10, array());
         $this->request->setBaseApiUrl($this->base_api_url);
         $handler                   = isset($param['handler']) ? $param['handler'] : '';
@@ -195,26 +216,23 @@ class YunDunSdk
         $httpRequest = $this->build_request($request);
         try {
             $rawResponse = $this->signedRequest($httpRequest);
-            if (isset($request['options']['async']) && $request['options']['async']) {
-                return json_encode([
-                    'status' => [
-                        'code'    => 1,
-                        'message' => $rawResponse
-                    ]
-                ]);
-            }
+
             $body     = $rawResponse->getBody();
             $contents = $body->getContents();
-            
+
             return $contents;
         } catch (HttpClientException $e) {
             HttpLib::logSdk(__FUNCTION__ . $e->getMessage());
+            $this->syncExceptionOutput($request);
         } catch (RequestException $e) {
             HttpLib::logSdk(__FUNCTION__ . $e->getMessage());
+            $this->syncExceptionOutput($request);
         } catch (InvalidArgumentException $e) {
             HttpLib::logSdk(__FUNCTION__ . $e->getMessage());
+            $this->syncExceptionOutput($request);
         } catch (\Exception $e) {
             HttpLib::logSdk(__FUNCTION__ . $e->getMessage());
+            $this->syncExceptionOutput($request);
         }
     }
 
@@ -295,25 +313,18 @@ class YunDunSdk
 
     public function async_callback($response)
     {
-        $body = $response->getBody()->getContents();
-        if(isset($this->request->getHeaders()['format'])){
-            if('json' == strtolower($this->request->getHeaders()['format'])){
-                header('Content-Type:application/json; charset=utf-8');
-            }else{
-                header('Content-Type:text/xml; charset=utf-8');
-            }
-        }else{
-            header('Content-Type:application/json; charset=utf-8');
-        }
-        echo $body;
-        exit;
+        $body   = $response->getBody()->getContents();
+        $format = isset($this->request->getHeaders()['format']) ? $this->request->getHeaders()['format'] : 'json';
+        HttpOutput::setType($format);
+        HttpOutput::output($body);
     }
 
     public function async_callback_exception($e)
     {
         $message = $e->getMessage();
         $method  = $e->getRequest()->getMethod();
-        HttpLib::logSdk(__FUNCTION__ . 'message:' . $message . ',method:' . $method);
+        HttpLib::logSdk(__FUNCTION__ . ' message:' . $message . ',method:' . $method);
+        $this->asyncExceptionOutput();
     }
 
     /**
@@ -328,5 +339,44 @@ class YunDunSdk
         HttpLib::logSdk($value, $logFile);
     }
 
+    /**
+     * @param $request
+     * @node_name 同步请求失败响应
+     * @link
+     * @desc
+     */
+    private function syncExceptionOutput($request)
+    {
+        $format = isset($request['headers']['format']) ? $request['headers']['format'] : 'json';
+        HttpOutput::setType($format);
+        $body = [
+            'status' => [
+                'code'    => $this->syncExceptionOutput['code'],
+                'message' => $this->syncExceptionOutput['message']
+            ],
+            'data'   => []
+        ];
+        HttpOutput::output($body);
+    }
+
+
+    /**
+     * @node_name 异步请求失败响应
+     * @link
+     * @desc
+     */
+    private function asyncExceptionOutput()
+    {
+        $format = isset($this->request->getHeaders()['format']) ? $this->request->getHeaders()['format'] : 'json';
+        HttpOutput::setType($format);
+        $body = [
+            'status' => [
+                'code'    => $this->asyncExceptionOutput['code'],
+                'message' => $this->asyncExceptionOutput['message']
+            ],
+            'data'   => []
+        ];
+        HttpOutput::output($body);
+    }
 
 }
