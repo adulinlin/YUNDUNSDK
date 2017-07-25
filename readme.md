@@ -5,6 +5,7 @@
 +	app_id, app_secret 联系技术客服，先注册一个云盾的账号，用于申请绑定api身份
 
 +   环境要求：php >=5.5
++   依赖composer
          
 ##使用步骤
 1.	composer require yundun/yundunsdk
@@ -31,6 +32,9 @@
         'syncExceptionOutputMessage' =>'同步请求异常信息提示',
         'asyncExceptionOutputCode' => 0,
         'asyncExceptionOutputMessage' => '异步请求异常信息提示'
+        'log' => true,  //是否记录sdk相关日志
+        'logfileWin' => 'E:/sdkV4.log', //windows日志路径
+        'logfileLinux' => '/tmp/sdkV4.log' //linux日志路径
         ]
     );
 

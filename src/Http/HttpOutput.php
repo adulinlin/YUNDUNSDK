@@ -24,7 +24,6 @@ class HttpOutput
                 } else {
                     echo $data;
                 }
-                exit;
                 break;
             case 'XML':
                 header('Content-Type:text/xml; charset=utf-8');
@@ -33,7 +32,6 @@ class HttpOutput
                 } else {
                     echo $data;
                 }
-                exit;
                 break;
             case 'JSONP':
                 header('Content-Type:application/json; charset=utf-8');
@@ -43,7 +41,6 @@ class HttpOutput
                 } else {
                     echo $handler . '(' . $data . ');';
                 }
-                exit;
                 break;
         }
     }

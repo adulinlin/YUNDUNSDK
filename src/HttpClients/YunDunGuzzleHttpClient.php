@@ -13,8 +13,6 @@ use YunDunSdk\Http\RawResponse;
 use GuzzleHttp\Client;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\RequestException;
-use YunDunSdk\Http\HttpLib;
-use GuzzleHttp\Middleware;
 use YunDunSdk\Exceptions\ExceptionCodeMsg;
 
 class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
@@ -60,21 +58,20 @@ class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
                 $callback,
                 $exception
             )->wait();
-        }
-
-        try {
-            $rawResponse = $this->guzzleClient->request($method, $url, $options);
-        } catch (RequestException $e) {
-            $rawResponse = $e->getResponse();
-            if (!$rawResponse instanceof ResponseInterface) {
-                throw new HttpClientException($e->getMessage(), $e->getCode());
+        }else{
+            try {
+                $rawResponse = $this->guzzleClient->request($method, $url, $options);
+            } catch (RequestException $e) {
+                $rawResponse = $e->getResponse();
+                if (!$rawResponse instanceof ResponseInterface) {
+                    throw new HttpClientException($e->getMessage(), $e->getCode());
+                }
             }
+            $rawHeaders = $this->getHeadersAsString($rawResponse);
+            $rawBody = $rawResponse->getBody()->getContents();
+            $httpStatusCode = $rawResponse->getStatusCode();
+            return new RawResponse($rawHeaders, $rawBody, $httpStatusCode);
         }
-        $rawHeaders = $this->getHeadersAsString($rawResponse);
-        $rawBody = $rawResponse->getBody();
-        $httpStatusCode = $rawResponse->getStatusCode();
-        return new RawResponse($rawHeaders, $rawBody, $httpStatusCode);
-
     }
     /**
      * Returns the Guzzle array of headers as a string.
