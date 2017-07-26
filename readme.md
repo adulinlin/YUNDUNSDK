@@ -1,3 +1,13 @@
+
+
+[![Latest Stable Version](https://poser.pugx.org/yundun/yundunsdk/v/stable)](https://packagist.org/packages/yundun/yundunsdk)
+[![Total Downloads](https://poser.pugx.org/yundun/yundunsdk/downloads)](https://packagist.org/packages/yundun/yundunsdk)
+[![Latest Unstable Version](https://poser.pugx.org/yundun/yundunsdk/v/unstable)](https://packagist.org/packages/yundun/yundunsdk)
+[![License](https://poser.pugx.org/yundun/yundunsdk/license)](https://packagist.org/packages/yundun/yundunsdk)
+[![Monthly Downloads](https://poser.pugx.org/yundun/yundunsdk/d/monthly)](https://packagist.org/packages/yundun/yundunsdk)
+[![Daily Downloads](https://poser.pugx.org/yundun/yundunsdk/d/daily)](https://packagist.org/packages/yundun/yundunsdk)
+[![composer.lock](https://poser.pugx.org/yundun/yundunsdk/composerlock)](https://packagist.org/packages/yundun/yundunsdk)
+
 # YUNDUN API PHP SDK legend
 
 +	接口基地址： 'http://apiv4.yundun.cn/V4/';
