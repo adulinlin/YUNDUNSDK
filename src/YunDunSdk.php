@@ -114,6 +114,7 @@ class YunDunSdk
         $headers = $request->getHeaders();
         $timeOut = $request->getTimeOut();
         $options = $request->getOptions();
+        $this->log("请求参数-request对象-" . print_r($request, true));
 
         $RawResponse = $this->http_client_handler->send($url, $method, $body, $headers, $timeOut, $options);
         return $RawResponse;
