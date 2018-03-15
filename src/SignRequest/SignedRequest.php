@@ -37,7 +37,7 @@ class SignedRequest
         }
 
         $this->rawSignedRequest = $rawSignedRequest;
-        $this->payload = static::parse($rawSignedRequest, $state, $appSecret);
+        $this->payload          = static::parse($rawSignedRequest, $state, $appSecret);
     }
 
     /**
@@ -106,14 +106,14 @@ class SignedRequest
      */
     public static function make(array $payload, $appSecret = null)
     {
-        $payload['algorithm'] = 'HMAC-SHA256';
-        $payload['issued_at'] = time();
-        $encodedPayload = static::base64UrlEncode(json_encode($payload));
+        $payload['algorithm'] = isset($payload['algorithm']) ? $payload['algorithm'] : 'HMAC-SHA256';
+        $payload['issued_at'] = isset($payload['issued_at']) ? $payload['issued_at'] : time();
+        $encodedPayload       = static::base64UrlEncode(json_encode($payload));
 
-        $hashedSig = static::hashSignature($encodedPayload, $appSecret);
+        $hashedSig  = static::hashSignature($encodedPayload, $appSecret);
         $encodedSig = static::base64UrlEncode($hashedSig);
 
-        return $encodedSig.'.'.$encodedPayload;
+        return $encodedSig . '.' . $encodedPayload;
     }
 
     /**
@@ -131,7 +131,7 @@ class SignedRequest
         list($encodedSig, $encodedPayload) = static::split($signedRequest);
 
         // Signature validation
-        $sig = static::decodeSignature($encodedSig);
+        $sig       = static::decodeSignature($encodedSig);
         $hashedSig = static::hashSignature($encodedPayload, $appSecret);
         static::validateSignature($hashedSig, $sig);
 

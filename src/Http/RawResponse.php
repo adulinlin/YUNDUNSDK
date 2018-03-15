@@ -8,7 +8,8 @@
 
 namespace YunDunSdk\Http;
 
-class RawResponse{
+class RawResponse
+{
     /**
      * @var array The response headers in the form of an associative array.
      */
@@ -26,9 +27,9 @@ class RawResponse{
     /**
      * Creates a new GraphRawResponse entity.
      *
-     * @param string|array $headers        The headers as a raw string or array.
-     * @param string       $body           The raw response body.
-     * @param int          $httpStatusCode The HTTP response code (if sending headers as parsed array).
+     * @param string|array $headers The headers as a raw string or array.
+     * @param string $body The raw response body.
+     * @param int $httpStatusCode The HTTP response code (if sending headers as parsed array).
      */
     public function __construct($headers, $body, $httpStatusCode = null)
     {
@@ -97,13 +98,13 @@ class RawResponse{
         // or a proxy was followed, etc
         $headerCollection = explode("\n\n", trim($rawHeaders));
         // We just want the last response (at the end)
-        $rawHeader = array_pop($headerCollection);
+        $rawHeader        = array_pop($headerCollection);
         $headerComponents = explode("\n", $rawHeader);
         foreach ($headerComponents as $line) {
             if (strpos($line, ': ') === false) {
                 $this->setHttpResponseCodeFromHeader($line);
             } else {
-                list($key, $value) = explode(': ', $line);
+                list($key, $value) = explode(': ', $line, 2);
                 $this->headers[$key] = $value;
             }
         }
