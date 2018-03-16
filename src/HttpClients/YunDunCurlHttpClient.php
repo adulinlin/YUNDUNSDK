@@ -3,15 +3,16 @@
  * Desc: YunDunCurlHttpClient
  * Created by PhpStorm.
  * User: <gaolu@yundun.com>
- * Date: 2016/11/25 16:14
+ * Date: 2016/11/25 16:14.
  */
 
 namespace YunDunSdk\HttpClients;
 
-use YunDunSdk\Exceptions\HttpClientException;
 use YunDunSdk\Http\RawResponse;
+use YunDunSdk\Exceptions\HttpClientException;
 
-class YunDunCurlHttpClient implements YunDunHttpClientInterface{
+class YunDunCurlHttpClient implements YunDunHttpClientInterface
+{
     /**
      * @var string The client error message
      */
@@ -21,26 +22,29 @@ class YunDunCurlHttpClient implements YunDunHttpClientInterface{
      */
     protected $curlErrorCode = 0;
     /**
-     * @var string|boolean The raw response from the server
+     * @var string|bool The raw response from the server
      */
     protected $rawResponse;
     /**
      * @var YunDunCurl Procedural curl as object
      */
     protected $yunDunCurl;
+
     /**
      * @param YunDunCurl|null Procedural curl as object
+     * @param null|YunDunCurl $yunDunCurl
      */
     public function __construct(YunDunCurl $yunDunCurl = null)
     {
         $this->yunDunCurl = $yunDunCurl ?: new YunDunCurl();
     }
+
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function send($url, $method, $body, array $headers, $timeOut, $otherOptions = [])
     {
-        if($body && !is_string($body)){
+        if ($body && !is_string($body)) {
             throw new HttpClientException('curl body must be string');
         }
         $this->openConnection($url, $method, $body, $headers, $timeOut);
@@ -51,10 +55,12 @@ class YunDunCurlHttpClient implements YunDunHttpClientInterface{
         }
         // Separate the raw headers from the raw body
         list($rawHeaders, $rawBody) = $this->extractResponseHeadersAndBody();
-        $httpStatusCode = $this->yunDunCurl->getinfo(CURLINFO_HTTP_CODE);
+        $httpStatusCode             = $this->yunDunCurl->getinfo(CURLINFO_HTTP_CODE);
         $this->closeConnection();
+
         return new RawResponse($rawHeaders, $rawBody, $httpStatusCode);
     }
+
     /**
      * Opens a new curl connection.
      *
@@ -67,34 +73,37 @@ class YunDunCurlHttpClient implements YunDunHttpClientInterface{
     public function openConnection($url, $method, $body, array $headers, $timeOut)
     {
         $options = [
-            CURLOPT_CUSTOMREQUEST => $method,
-            CURLOPT_HTTPHEADER => $this->compileRequestHeaders($headers),
-            CURLOPT_URL => $url,
+            CURLOPT_CUSTOMREQUEST  => $method,
+            CURLOPT_HTTPHEADER     => $this->compileRequestHeaders($headers),
+            CURLOPT_URL            => $url,
             CURLOPT_CONNECTTIMEOUT => 10,
-            CURLOPT_TIMEOUT => $timeOut,
+            CURLOPT_TIMEOUT        => $timeOut,
             CURLOPT_RETURNTRANSFER => true, // Follow 301 redirects
-            CURLOPT_HEADER => true, // Enable header processing
+            CURLOPT_HEADER         => true, // Enable header processing
         ];
-        if ($method !== "GET") {
+        if ('GET' !== $method) {
             $options[CURLOPT_POSTFIELDS] = $body;
         }
         $this->yunDunCurl->init();
         $this->yunDunCurl->setoptArray($options);
     }
+
     /**
-     * Closes an existing curl connection
+     * Closes an existing curl connection.
      */
     public function closeConnection()
     {
         $this->yunDunCurl->close();
     }
+
     /**
-     * Send the request and get the raw response from curl
+     * Send the request and get the raw response from curl.
      */
     public function sendRequest()
     {
         $this->rawResponse = $this->yunDunCurl->exec();
     }
+
     /**
      * Compiles the request headers into a curl-friendly format.
      *
@@ -106,20 +115,23 @@ class YunDunCurlHttpClient implements YunDunHttpClientInterface{
     {
         $return = [];
         foreach ($headers as $key => $value) {
-            $return[] = $key . ': ' . $value;
+            $return[] = $key.': '.$value;
         }
+
         return $return;
     }
+
     /**
-     * Extracts the headers and the body into a two-part array
+     * Extracts the headers and the body into a two-part array.
      *
      * @return array
      */
     public function extractResponseHeadersAndBody()
     {
-        $parts = explode("\r\n\r\n", $this->rawResponse);
-        $rawBody = array_pop($parts);
+        $parts      = explode("\r\n\r\n", $this->rawResponse);
+        $rawBody    = array_pop($parts);
         $rawHeaders = implode("\r\n\r\n", $parts);
+
         return [trim($rawHeaders), trim($rawBody)];
     }
 }

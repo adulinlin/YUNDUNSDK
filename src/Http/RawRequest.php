@@ -1,4 +1,5 @@
 <?php
+
 namespace YunDunSdk\Http;
 
 use YunDunSdk\Exceptions\YunDunSdkException;
@@ -15,24 +16,25 @@ class RawRequest
     protected $body_type;
     protected $options;
 
-
-    public function __construct($method = '', $url = '', array $headers = array(), $body = null, $timeout = 10, $urlParams = array())
+    public function __construct($method = '', $url = '', array $headers = [], $body = null, $timeout = 10, $urlParams = [])
     {
-        $this->method = strtoupper($method);
-        $this->url = $url;
-        $this->headers = $headers;
-        $this->body = $body;
-        $this->timeout = (int)$timeout;
+        $this->method    = strtoupper($method);
+        $this->url       = $url;
+        $this->headers   = $headers;
+        $this->body      = $body;
+        $this->timeout   = (int) $timeout;
         $this->urlParams = $urlParams;
     }
 
     /**
      * @param $headers
      * @node_name 设置请求头
-     * @link
+     *
+     * @see
      * @desc
      */
-    public function setHeaders($headers){
+    public function setHeaders($headers)
+    {
         $this->headers = $headers;
     }
 
@@ -40,31 +42,37 @@ class RawRequest
      * @param $k
      * @param $v
      * @node_name 单个头设置
-     * @link
+     *
+     * @see
      * @desc
      */
-    public function setHeader($k, $v){
+    public function setHeader($k, $v)
+    {
         $this->headers[$k] = $v;
     }
 
     /**
      * @return array
      * @node_name 获取请求头
-     * @link
+     *
+     * @see
      * @desc
      */
-    public function getHeaders(){
+    public function getHeaders()
+    {
         return $this->headers;
     }
 
     /**
      * @param $base_api_url
      * @node_name 设置基url
-     * @link
+     *
+     * @see
      * @desc
      */
-    public function setBaseApiUrl($base_api_url){
-        if (substr($this->base_api_url, -1) != '/') {
+    public function setBaseApiUrl($base_api_url)
+    {
+        if ('/' != substr($this->base_api_url, -1)) {
             $this->base_api_url .= '/';
         }
         $this->base_api_url = $base_api_url;
@@ -72,21 +80,23 @@ class RawRequest
 
     /**
      * @param $url
+     *
      * @throws YunDunSdkException
      * @node_name 设置请求url
-     * @link
+     *
+     * @see
      * @desc
      */
     public function setUrl($url)
     {
         //http https开头的url
-        if (stripos($url, 'http://') !== false || stripos($url, 'https://') !== false) {
+        if (false !== stripos($url, 'http://') || false !== stripos($url, 'https://')) {
             $this->url = $url;
-        }else{
-            if(empty($this->base_api_url)){
+        } else {
+            if (empty($this->base_api_url)) {
                 throw new YunDunSdkException('must set base api url first');
             }
-            $api_url = $this->base_api_url . $url;
+            $api_url   = $this->base_api_url.$url;
             $this->url = $api_url;
         }
     }
@@ -94,128 +104,149 @@ class RawRequest
     /**
      * @return mixed
      * @node_name 获取请求url
-     * @link
+     *
+     * @see
      * @desc
      */
     public function getUrl()
     {
         $urlParams = $this->getUrlParams();
         if (is_array($urlParams) && count($urlParams) > 0) {
-            $this->url .= (strpos($this->url, "?") === false) ? "?" : "&";
+            $this->url .= (false === strpos($this->url, '?')) ? '?' : '&';
             $this->url .= self::build_query($urlParams);
         }
+
         return $this->url;
     }
 
     /**
      * @param $timeOut
      * @node_name 设置超时时间
-     * @link
+     *
+     * @see
      * @desc
      */
-    public function setTimeOut($timeOut){
+    public function setTimeOut($timeOut)
+    {
         $this->timeout = $timeOut;
     }
 
     /**
      * @return int
      * @node_name 获取超时时间
-     * @link
+     *
+     * @see
      * @desc
      */
-    public function getTimeOut(){
+    public function getTimeOut()
+    {
         return $this->timeout;
     }
 
     /**
      * @param $urlParams
      * @node_name 设置url params用于附加在url后面
-     * @link
+     *
+     * @see
      * @desc
      */
-    public function setUrlParams($urlParams){
+    public function setUrlParams($urlParams)
+    {
         $this->urlParams = $urlParams;
     }
 
     /**
      * @return mixed
      * @node_name 获取url params
-     * @link
+     *
+     * @see
      * @desc
      */
-    public function getUrlParams(){
+    public function getUrlParams()
+    {
         return $this->urlParams;
     }
 
     /**
      * @param $params
+     *
      * @return string
      * @node_name x-www-form-urlencoded
-     * @link
+     *
+     * @see
      * @desc
      */
-    public static function build_query($params) {
-        if (function_exists("http_build_query")) {
-            return http_build_query($params, "", "&");
+    public static function build_query($params)
+    {
+        if (function_exists('http_build_query')) {
+            return http_build_query($params, '', '&');
         } else {
             foreach ($params as $name => $value) {
-                $elements[] = "{$name}=" . urlencode($value);
+                $elements[] = "{$name}=".urlencode($value);
             }
 
-            return implode("&", $elements);
+            return implode('&', $elements);
         }
     }
 
-
-    public function setBody($body){
+    public function setBody($body)
+    {
         $this->body = $body;
     }
 
     /**
      * @return null
      * @node_name 获取body
-     * @link
+     *
+     * @see
      * @desc
      */
-    public function getBody(){
+    public function getBody()
+    {
         return $this->body;
     }
 
     /**
      * @param $method
      * @node_name 设置请求方法
-     * @link
+     *
+     * @see
      * @desc
      */
-    public function setMethod($method){
+    public function setMethod($method)
+    {
         $this->method = $method;
     }
 
     /**
      * @return string
      * @node_name 获取请求方法
-     * @link
+     *
+     * @see
      * @desc
      */
-    public function getMethod(){
+    public function getMethod()
+    {
         return $this->method;
     }
 
-    public function setBodyType($type){
+    public function setBodyType($type)
+    {
         $this->body_type = strtolower($type);
     }
 
-    public function getBodyType(){
+    public function getBodyType()
+    {
         return $this->body_type;
     }
 
-    public function setOptions($options){
+    public function setOptions($options)
+    {
         $this->options = $options;
     }
 
-    public function getOptions(){
+    public function getOptions()
+    {
         return $this->options;
     }
-
-
 }

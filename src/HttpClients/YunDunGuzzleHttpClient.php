@@ -3,62 +3,66 @@
  * Desc: YunDunGuzzleHttpClient
  * Created by PhpStorm.
  * User: <gaolu@yundun.com>
- * Date: 2016/11/25 16:47
+ * Date: 2016/11/25 16:47.
  */
 
 namespace YunDunSdk\HttpClients;
 
-use YunDunSdk\Exceptions\HttpClientException;
-use YunDunSdk\Http\RawResponse;
 use GuzzleHttp\Client;
+use YunDunSdk\Http\RawResponse;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\RequestException;
 use YunDunSdk\Exceptions\ExceptionCodeMsg;
+use YunDunSdk\Exceptions\HttpClientException;
 
-class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
+class YunDunGuzzleHttpClient implements YunDunHttpClientInterface
+{
     /**
      * @var \GuzzleHttp\Client The Guzzle client.
      */
     protected $guzzleClient;
+
     /**
      * @param \GuzzleHttp\Client|null The Guzzle client.
+     * @param null|Client $guzzleClient
      */
     public function __construct(Client $guzzleClient = null)
     {
         $this->guzzleClient = $guzzleClient ?: new Client();
     }
+
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function send($url, $method, $body, array $headers, $timeOut, $otherOptions = [])
     {
-        if($body && !is_string($body)){
+        if ($body && !is_string($body)) {
             throw new HttpClientException('guzzle body must be string');
         }
         $options = [
-            'headers' => $headers,
-            'timeout' => $timeOut,
+            'headers'         => $headers,
+            'timeout'         => $timeOut,
             'connect_timeout' => 10,
         ];
 
-        if(isset($headers['Content-Type']) && $headers['Content-Type'] == 'application/json'){
+        if (isset($headers['Content-Type']) && 'application/json' == $headers['Content-Type']) {
             $options['json'] = json_decode($body, true);
-        }else if(isset($headers['Content-Type']) && $headers['Content-Type'] == 'application/x-www-form-urlencoded'){
+        } elseif (isset($headers['Content-Type']) && 'application/x-www-form-urlencoded' == $headers['Content-Type']) {
             parse_str($body, $content);
             $options['form_params'] = $content;
-        }else{
+        } else {
             throw new HttpClientException(ExceptionCodeMsg::MSG_YUNDUNGUZZLEHTTPCLIENT_SEND_1, ExceptionCodeMsg::CODE_YUNDUNGUZZLEHTTPCLIENT_SEND_1);
         }
 
-        if(isset($otherOptions['async']) && $otherOptions['async']){
-            $callback = $otherOptions['callback']?:function(){};
-            $exception = $otherOptions['exception']?:function(){};
+        if (isset($otherOptions['async']) && $otherOptions['async']) {
+            $callback = $otherOptions['callback'] ?: function () {};
+            $exception = $otherOptions['exception'] ?: function () {};
             $promise = $this->guzzleClient->requestAsync($method, $url, $options);
             $promise->then(
                 $callback,
                 $exception
             )->wait();
-        }else{
+        } else {
             try {
                 $rawResponse = $this->guzzleClient->request($method, $url, $options);
             } catch (RequestException $e) {
@@ -67,12 +71,14 @@ class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
                     throw new HttpClientException($e->getMessage(), $e->getCode());
                 }
             }
-            $rawHeaders = $this->getHeadersAsString($rawResponse);
-            $rawBody = $rawResponse->getBody()->getContents();
+            $rawHeaders     = $this->getHeadersAsString($rawResponse);
+            $rawBody        = $rawResponse->getBody()->getContents();
             $httpStatusCode = $rawResponse->getStatusCode();
+
             return new RawResponse($rawHeaders, $rawBody, $httpStatusCode);
         }
     }
+
     /**
      * Returns the Guzzle array of headers as a string.
      *
@@ -82,11 +88,12 @@ class YunDunGuzzleHttpClient implements YunDunHttpClientInterface{
      */
     public function getHeadersAsString(ResponseInterface $response)
     {
-        $headers = $response->getHeaders();
+        $headers    = $response->getHeaders();
         $rawHeaders = [];
         foreach ($headers as $name => $values) {
-            $rawHeaders[] = $name . ": " . implode(", ", $values);
+            $rawHeaders[] = $name.': '.implode(', ', $values);
         }
+
         return implode("\r\n", $rawHeaders);
     }
 }

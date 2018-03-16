@@ -3,7 +3,7 @@
  * Desc: RawResponse
  * Created by PhpStorm.
  * User: <gaolu@yundun.com>
- * Date: 2016/11/25 15:52
+ * Date: 2016/11/25 15:52.
  */
 
 namespace YunDunSdk\Http;
@@ -23,18 +23,17 @@ class RawResponse
      */
     protected $httpResponseCode;
 
-
     /**
      * Creates a new GraphRawResponse entity.
      *
-     * @param string|array $headers The headers as a raw string or array.
-     * @param string $body The raw response body.
-     * @param int $httpStatusCode The HTTP response code (if sending headers as parsed array).
+     * @param string|array $headers        The headers as a raw string or array.
+     * @param string       $body           The raw response body.
+     * @param int          $httpStatusCode The HTTP response code (if sending headers as parsed array).
      */
     public function __construct($headers, $body, $httpStatusCode = null)
     {
         if (is_numeric($httpStatusCode)) {
-            $this->httpResponseCode = (int)$httpStatusCode;
+            $this->httpResponseCode = (int) $httpStatusCode;
         }
         if (is_array($headers)) {
             $this->headers = $headers;
@@ -82,7 +81,7 @@ class RawResponse
     public function setHttpResponseCodeFromHeader($rawResponseHeader)
     {
         preg_match('|HTTP/\d\.\d\s+(\d+)\s+.*|', $rawResponseHeader, $match);
-        $this->httpResponseCode = (int)$match[1];
+        $this->httpResponseCode = (int) $match[1];
     }
 
     /**
@@ -101,10 +100,10 @@ class RawResponse
         $rawHeader        = array_pop($headerCollection);
         $headerComponents = explode("\n", $rawHeader);
         foreach ($headerComponents as $line) {
-            if (strpos($line, ': ') === false) {
+            if (false === strpos($line, ': ')) {
                 $this->setHttpResponseCodeFromHeader($line);
             } else {
-                list($key, $value) = explode(': ', $line, 2);
+                list($key, $value)   = explode(': ', $line, 2);
                 $this->headers[$key] = $value;
             }
         }

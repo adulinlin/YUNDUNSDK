@@ -1,9 +1,10 @@
 <?php
+
 namespace YunDunSdk\HttpClients;
 
+use Exception;
 use GuzzleHttp\Client;
 use InvalidArgumentException;
-use Exception;
 
 class HttpClientsFactory
 {
@@ -31,7 +32,6 @@ class HttpClientsFactory
         if ($handler instanceof YunDunHttpClientInterface) {
             return $handler;
         }
-
 
         if ('curl' === $handler) {
             if (!extension_loaded('curl')) {
@@ -69,6 +69,5 @@ class HttpClientsFactory
         if (extension_loaded('curl')) {
             return new YunDunCurlHttpClient();
         }
-
     }
 }

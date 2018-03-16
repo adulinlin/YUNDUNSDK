@@ -4,7 +4,6 @@ namespace Tests;
 
 class ExampleTest extends TestCase
 {
-
     /**
      * A basic test example.
      *
@@ -14,6 +13,4 @@ class ExampleTest extends TestCase
     {
         $this->assertTrue(true);
     }
-
-
 }

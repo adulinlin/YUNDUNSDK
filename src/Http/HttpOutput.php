@@ -5,13 +5,13 @@ namespace YunDunSdk\Http;
 class HttpOutput
 {
     private static $outputtype  = 'JSON';
-    private static $supporttype = array('JSON', 'XML', 'JSONP');
-
+    private static $supporttype = ['JSON', 'XML', 'JSONP'];
 
     /**
-     * @param array $data  数组或者字符串
+     * @param array $data 数组或者字符串
      * @node_name 输出
-     * @link
+     *
+     * @see
      * @desc
      */
     public static function output($data = [])
@@ -37,19 +37,19 @@ class HttpOutput
                 header('Content-Type:application/json; charset=utf-8');
                 $handler = strtolower('callback');
                 if (is_array($data)) {
-                    echo $handler . '(' . json_encode($data) . ');';
+                    echo $handler.'('.json_encode($data).');';
                 } else {
-                    echo $handler . '(' . $data . ');';
+                    echo $handler.'('.$data.');';
                 }
                 break;
         }
     }
 
-
     /**
      * @param $type
      * @node_name set output type
-     * @link
+     *
+     * @see
      * @desc
      */
     public static function setType($type)
@@ -61,23 +61,28 @@ class HttpOutput
 
     /**
      * XML编码
-     * @param mixed $data 数据
+     *
+     * @param mixed  $data     数据
      * @param string $encoding 数据编码
-     * @param string $root 根节点名
+     * @param string $root     根节点名
+     *
      * @return string
      */
     private static function xml_encode($data, $encoding = 'utf-8', $root = 'YunDun')
     {
-        $xml = '<?xml version="1.0" encoding="' . $encoding . '"?>';
-        $xml .= '<' . $root . '>';
+        $xml = '<?xml version="1.0" encoding="'.$encoding.'"?>';
+        $xml .= '<'.$root.'>';
         $xml .= self::data_to_xml($data);
-        $xml .= '</' . $root . '>';
+        $xml .= '</'.$root.'>';
+
         return $xml;
     }
 
     /**
      * 数据XML编码
+     *
      * @param mixed $data 数据
+     *
      * @return string
      */
     private static function data_to_xml($data)
@@ -87,19 +92,21 @@ class HttpOutput
             is_numeric($key) && $key = "item id=\"$key\"";
             $xml .= "<$key>";
             $xml .= (is_array($val) || is_object($val)) ? self::data_to_xml($val) : $val;
-            list($key,) = explode(' ', $key);
+            list($key) = explode(' ', $key);
             $xml .= "</$key>";
         }
+
         return $xml;
     }
-
 
     /**
      * @param $xml
      * @param bool $recursive
+     *
      * @return array
      * @node_name xml->array
-     * @link
+     *
+     * @see
      * @desc
      */
     public static function XML2Array($xml, $recursive = false)
@@ -110,18 +117,17 @@ class HttpOutput
             $array = $xml;
         }
 
-        $newArray = array();
-        $array    = ( array )$array;
+        $newArray = [];
+        $array    = (array) $array;
         foreach ($array as $key => $value) {
-            $value = ( array )$value;
-            if (isset ($value [0])) {
-                $newArray [$key] = trim($value [0]);
+            $value = (array) $value;
+            if (isset($value[0])) {
+                $newArray[$key] = trim($value[0]);
             } else {
-                $newArray [$key] = self::XML2Array($value, true);
+                $newArray[$key] = self::XML2Array($value, true);
             }
         }
+
         return $newArray;
     }
-
-
 }

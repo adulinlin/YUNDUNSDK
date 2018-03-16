@@ -3,7 +3,7 @@
  * Desc:
  * Created by PhpStorm.
  * User: jason-gao
- * Date: 2018/3/12 17:55
+ * Date: 2018/3/12 17:55.
  */
 
 namespace Tests;
@@ -15,7 +15,6 @@ use YunDunSdk\YunDunSdk;
  */
 class YunDunSdkTest extends TestCase
 {
-
     /**
      * @covers ::__construct
      */
@@ -40,13 +39,13 @@ class YunDunSdkTest extends TestCase
                                     'asyncExceptionOutputMessage' => '异步请求异常信息提示',
                                     'log'                         => true,  //是否记录sdk相关日志
                                     'logfileWin'                  => 'E:/sdkV4.log', //windows日志路径
-                                    'logfileLinux'                => '/tmp/sdkV4.log' //linux日志路径
+                                    'logfileLinux'                => '/tmp/sdkV4.log', //linux日志路径
         ]);
 
         $this->assertInstanceOf(YunDunSdk::class, $yunDunSdk);
     }
 
-    public function testGet(){
-
+    public function testGet()
+    {
     }
 }

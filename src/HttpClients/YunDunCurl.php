@@ -3,25 +3,28 @@
  * Desc: YunDunCurl
  * Created by PhpStorm.
  * User: <gaolu@yundun.com>
- * Date: 2016/11/25 16:17
+ * Date: 2016/11/25 16:17.
  */
 
 namespace YunDunSdk\HttpClients;
 
-class YunDunCurl{
+class YunDunCurl
+{
     /**
      * @var resource Curl resource instance
      */
     protected $curl;
+
     /**
-     * Make a new curl reference instance
+     * Make a new curl reference instance.
      */
     public function init()
     {
         $this->curl = curl_init();
     }
+
     /**
-     * Set a curl option
+     * Set a curl option.
      *
      * @param $key
      * @param $value
@@ -30,8 +33,9 @@ class YunDunCurl{
     {
         curl_setopt($this->curl, $key, $value);
     }
+
     /**
-     * Set an array of options to a curl resource
+     * Set an array of options to a curl resource.
      *
      * @param array $options
      */
@@ -39,8 +43,9 @@ class YunDunCurl{
     {
         curl_setopt_array($this->curl, $options);
     }
+
     /**
-     * Send a curl request
+     * Send a curl request.
      *
      * @return mixed
      */
@@ -48,8 +53,9 @@ class YunDunCurl{
     {
         return curl_exec($this->curl);
     }
+
     /**
-     * Return the curl error number
+     * Return the curl error number.
      *
      * @return int
      */
@@ -57,8 +63,9 @@ class YunDunCurl{
     {
         return curl_errno($this->curl);
     }
+
     /**
-     * Return the curl error message
+     * Return the curl error message.
      *
      * @return string
      */
@@ -66,8 +73,9 @@ class YunDunCurl{
     {
         return curl_error($this->curl);
     }
+
     /**
-     * Get info from a curl reference
+     * Get info from a curl reference.
      *
      * @param $type
      *
@@ -77,8 +85,9 @@ class YunDunCurl{
     {
         return curl_getinfo($this->curl, $type);
     }
+
     /**
-     * Get the currently installed curl version
+     * Get the currently installed curl version.
      *
      * @return array
      */
@@ -86,8 +95,9 @@ class YunDunCurl{
     {
         return curl_version();
     }
+
     /**
-     * Close the resource connection to curl
+     * Close the resource connection to curl.
      */
     public function close()
     {

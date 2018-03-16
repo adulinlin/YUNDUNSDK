@@ -3,7 +3,7 @@
  * Desc: 签名
  * Created by PhpStorm.
  * User: jason-gao
- * Date: 2018/3/13 10:30
+ * Date: 2018/3/13 10:30.
  */
 
 namespace Tests\SignRequest;
@@ -24,19 +24,19 @@ class SignedRequestTest extends TestCase
 
     protected function setUp()
     {
-        $this->appSecret        = 'test-app-secret';
-        $this->payload          = [
+        $this->appSecret = 'test-app-secret';
+        $this->payload   = [
             'a'           => 1,
             'b'           => 2,
             'oauth_token' => 'test_token',
             'user_id'     => 123,
             'issued_at'   => 1520911781,
-            'algorithm'   => 'HMAC-SHA256'
+            'algorithm'   => 'HMAC-SHA256',
         ];
-        $this->rawSignedRequest = 'InS2x-EJ5H-449w4QhuXxrX5rgQTu_e9rXGxjKL7OmY=.eyJhIjoxLCJiIjoyLCJvYXV0aF90b2tlbiI6InRlc3RfdG9rZW4iLCJ1c2VyX2lkIjoxMjMsImlzc3VlZF9hdCI6MTUyMDkxMTc4MSwiYWxnb3JpdGhtIjoiSE1BQy1TSEEyNTYifQ==';
+        $this->rawSignedRequest          = 'InS2x-EJ5H-449w4QhuXxrX5rgQTu_e9rXGxjKL7OmY=.eyJhIjoxLCJiIjoyLCJvYXV0aF90b2tlbiI6InRlc3RfdG9rZW4iLCJ1c2VyX2lkIjoxMjMsImlzc3VlZF9hdCI6MTUyMDkxMTc4MSwiYWxnb3JpdGhtIjoiSE1BQy1TSEEyNTYifQ==';
         list($rawSignature, $rawPayload) = explode('.', $this->rawSignedRequest, 2);
-        $this->rawSignature = $rawSignature;
-        $this->rawPayload   = $rawPayload;
+        $this->rawSignature              = $rawSignature;
+        $this->rawPayload                = $rawPayload;
     }
 
     protected function tearDown()
@@ -72,7 +72,6 @@ class SignedRequestTest extends TestCase
         $this->assertEquals($rawSignedRequest, $this->rawSignedRequest);
     }
 
-
     /**
      * @expectedException \YunDunSdk\Exceptions\SignedRequestException
      * @expectedExceptionCode 606
@@ -82,7 +81,6 @@ class SignedRequestTest extends TestCase
     {
         SignedRequest::parse('test raw sign', null, $this->appSecret);
     }
-
 
     /**
      * @covers ::base64UrlEncode
@@ -111,7 +109,7 @@ class SignedRequestTest extends TestCase
      */
     public function testAnImproperlyEncodedSignatureWillThrowAnException()
     {
-        new SignedRequest('test_sig' . '.' . $this->rawPayload, null, $this->appSecret);
+        new SignedRequest('test_sig'.'.'.$this->rawPayload, null, $this->appSecret);
     }
 
     /**
@@ -121,9 +119,8 @@ class SignedRequestTest extends TestCase
      */
     public function testAnImproperlyEncodedPayloadWillThrowAnException()
     {
-        new SignedRequest($this->rawSignature . '.' . 'test_payload', null, $this->appSecret);
+        new SignedRequest($this->rawSignature.'.'.'test_payload', null, $this->appSecret);
     }
-
 
     /**
      * @expectedException \YunDunSdk\Exceptions\SignedRequestException
@@ -139,7 +136,6 @@ class SignedRequestTest extends TestCase
 
         new SignedRequest($rawSignedRequest, null, $this->appSecret);
     }
-
 
     /**
      * @covers ::getPayload
@@ -166,5 +162,4 @@ class SignedRequestTest extends TestCase
         $this->assertEquals($this->rawSignedRequest, $sr->getRawSignedRequest());
         $this->assertTrue($sr->hasOAuthData());
     }
-
 }

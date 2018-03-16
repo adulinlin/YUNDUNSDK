@@ -3,7 +3,7 @@
  * Desc: http response
  * Created by PhpStorm.
  * User: jason-gao
- * Date: 2018/3/13 14:40
+ * Date: 2018/3/13 14:40.
  */
 
 namespace Tests\Http;
@@ -16,7 +16,6 @@ use YunDunSdk\Http\RawResponse;
  */
 class RawResponseTest extends TestCase
 {
-
     protected $fakeRawProxyHeader = "HTTP/1.0 200 Connection established
 Proxy-agent: Kerio Control/7.1.1 build 1971\r\n\r\n";
 
@@ -30,7 +29,7 @@ X-FB-Debug: 02QQiffE7JG2rV6i/Agzd0gI2/OOQ2lk5UW0=
 Access-Control-Allow-Origin: *\r\n\r\n
 HEADER;
 
-    protected $fakeHeadersAsArray    = [
+    protected $fakeHeadersAsArray = [
         'Etag'                        => '"9d86b21aa74d74e574bbb35ba13524a52deb96e3"',
         'Content-Type'                => 'text/javascript; charset=UTF-8',
         'X-FB-Rev'                    => '9244768',
@@ -60,8 +59,8 @@ HEADER;
             'foo' => 'bar',
             'baz' => 'faz',
         ];
-        $response  = new RawResponse($myHeaders, '');
-        $headers   = $response->getHeaders();
+        $response = new RawResponse($myHeaders, '');
+        $headers  = $response->getHeaders();
 
         $this->assertEquals($myHeaders, $headers);
     }
@@ -72,8 +71,8 @@ HEADER;
      */
     public function testCanSetTheHeadersFromAString()
     {
-        $response = new RawResponse($this->fakeRawHeader, '');
-        $headers = $response->getHeaders();
+        $response         = new RawResponse($this->fakeRawHeader, '');
+        $headers          = $response->getHeaders();
         $httpResponseCode = $response->getHttpResponseCode();
         $this->assertEquals($this->fakeHeadersAsArray, $headers);
         $this->assertEquals(200, $httpResponseCode);
@@ -85,8 +84,8 @@ HEADER;
      */
     public function testWillIgnoreProxyHeaders()
     {
-        $response = new RawResponse($this->fakeRawProxyHeader . $this->fakeRawHeader, '');
-        $headers = $response->getHeaders();
+        $response         = new RawResponse($this->fakeRawProxyHeader.$this->fakeRawHeader, '');
+        $headers          = $response->getHeaders();
         $httpResponseCode = $response->getHttpResponseCode();
         $this->assertEquals($this->fakeHeadersAsArray, $headers);
         $this->assertEquals(200, $httpResponseCode);
@@ -98,9 +97,8 @@ HEADER;
     public function testCanTransformJsonHeaderValues()
     {
         $response = new RawResponse($this->jsonFakeHeader, '');
-        $headers = $response->getHeaders();
+        $headers  = $response->getHeaders();
 
         $this->assertEquals($this->jsonFakeHeaderAsArray['x-xx'], $headers['x-xx']);
     }
-
 }

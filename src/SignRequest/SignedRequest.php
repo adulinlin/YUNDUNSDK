@@ -3,7 +3,7 @@
  * Desc: Class SignedRequest
  * Created by PhpStorm.
  * User: <gaolu@yundun.com>
- * Date: 2016/11/25 10:45
+ * Date: 2016/11/25 10:45.
  */
 
 namespace YunDunSdk\SignRequest;
@@ -12,7 +12,6 @@ use YunDunSdk\Exceptions\SignedRequestException;
 
 class SignedRequest
 {
-
     /**
      * @var string
      */
@@ -27,7 +26,7 @@ class SignedRequest
      * Instantiate a new SignedRequest entity.
      *
      * @param string|null $rawSignedRequest The raw signed request.
-     * @param string|null $state random string to prevent CSRF.
+     * @param string|null $state            random string to prevent CSRF.
      * @param string|null $appSecret
      */
     public function __construct($rawSignedRequest = null, $state = null, $appSecret = null)
@@ -63,7 +62,7 @@ class SignedRequest
     /**
      * Returns a property from the signed request data if available.
      *
-     * @param string $key
+     * @param string     $key
      * @param mixed|null $default
      *
      * @return mixed|null
@@ -73,6 +72,7 @@ class SignedRequest
         if (isset($this->payload[$key])) {
             return $this->payload[$key];
         }
+
         return $default;
     }
 
@@ -89,7 +89,7 @@ class SignedRequest
     /**
      * Checks for OAuth data in the payload.
      *
-     * @return boolean
+     * @return bool
      */
     public function hasOAuthData()
     {
@@ -99,7 +99,7 @@ class SignedRequest
     /**
      * Creates a signed request from an array of data.
      *
-     * @param array $payload
+     * @param array       $payload
      * @param string|null $appSecret
      *
      * @return string
@@ -113,14 +113,14 @@ class SignedRequest
         $hashedSig  = static::hashSignature($encodedPayload, $appSecret);
         $encodedSig = static::base64UrlEncode($hashedSig);
 
-        return $encodedSig . '.' . $encodedPayload;
+        return $encodedSig.'.'.$encodedPayload;
     }
 
     /**
      * Validates and decodes a signed request and returns
      * the payload as an array.
      *
-     * @param string $signedRequest
+     * @param string      $signedRequest
      * @param string|null $state
      * @param string|null $appSecret
      *
@@ -154,7 +154,7 @@ class SignedRequest
      */
     public static function validateFormat($signedRequest)
     {
-        if (strpos($signedRequest, '.') !== false) {
+        if (false !== strpos($signedRequest, '.')) {
             return;
         }
 
@@ -234,7 +234,7 @@ class SignedRequest
      */
     public static function validateAlgorithm(array $data)
     {
-        if (isset($data['algorithm']) && $data['algorithm'] === 'HMAC-SHA256') {
+        if (isset($data['algorithm']) && 'HMAC-SHA256' === $data['algorithm']) {
             return;
         }
 
@@ -246,12 +246,12 @@ class SignedRequest
     /**
      * Hashes the signature used in a signed request.
      *
-     * @param string $encodedData
+     * @param string      $encodedData
      * @param string|null $appSecret
      *
-     * @return string
-     *
      * @throws SignedRequestException
+     *
+     * @return string
      */
     public static function hashSignature($encodedData, $appSecret = null)
     {
@@ -280,10 +280,10 @@ class SignedRequest
     {
         if (mb_strlen($hashedSig) === mb_strlen($sig)) {
             $validate = 0;
-            for ($i = 0; $i < mb_strlen($sig); $i++) {
+            for ($i = 0; $i < mb_strlen($sig); ++$i) {
                 $validate |= ord($hashedSig[$i]) ^ ord($sig[$i]);
             }
-            if ($validate === 0) {
+            if (0 === $validate) {
                 return;
             }
         }
@@ -296,7 +296,7 @@ class SignedRequest
     /**
      * Validates a signed request against CSRF.
      *
-     * @param array $data
+     * @param array  $data
      * @param string $state
      *
      * @throws SignedRequestException
@@ -315,8 +315,9 @@ class SignedRequest
     /**
      * Base64 decoding which replaces characters:
      *   + instead of -
-     *   / instead of _
-     * @link http://en.wikipedia.org/wiki/Base64#URL_applications
+     *   / instead of _.
+     *
+     * @see http://en.wikipedia.org/wiki/Base64#URL_applications
      *
      * @param string $input base64 url encoded input
      *
@@ -326,14 +327,16 @@ class SignedRequest
     {
         $urlDecodedBase64 = strtr($input, '-_', '+/');
         static::validateBase64($urlDecodedBase64);
+
         return base64_decode($urlDecodedBase64);
     }
 
     /**
      * Base64 encoding which replaces characters:
      *   + instead of -
-     *   / instead of _
-     * @link http://en.wikipedia.org/wiki/Base64#URL_applications
+     *   / instead of _.
+     *
+     * @see http://en.wikipedia.org/wiki/Base64#URL_applications
      *
      * @param string $input string to encode
      *
@@ -362,5 +365,4 @@ class SignedRequest
             'Signed request contains malformed base64 encoding.', 608
         );
     }
-
 }
