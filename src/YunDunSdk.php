@@ -45,6 +45,8 @@ class YunDunSdk
     private $logfileWin;
     private $logfileLinux;
     private $config = [];
+    private $asyncResponse = [];
+    private $syncResponse = [];
 
     public function __construct($param)
     {
@@ -248,6 +250,16 @@ class YunDunSdk
                 $this->log('sync response body:' . print_r($rawResponse->getBody(), true));
                 $this->log('sync response http_status_code:' . print_r($rawResponse->getHttpResponseCode(), true));
 
+                $this->syncResponse = [
+                    'headers' => $rawResponse->getHeaders(),
+                    'body' => $rawResponse->getBody(),
+                    'httpCode' => $rawResponse->getHttpResponseCode(),
+                ];
+
+                return $body;
+            }else if(isset($request['options']['async']) && $request['options']['async']){
+                $body = $this->asyncResponse['body'];
+
                 return $body;
             }
         } catch (HttpClientException $e) {
@@ -352,7 +364,12 @@ class YunDunSdk
         $this->log('async response http_status_code:' . print_r($rawResponse->getHttpResponseCode(), true));
         $format = isset($this->request->getHeaders()['format']) ? $this->request->getHeaders()['format'] : 'json';
         HttpOutput::setType($format);
-        HttpOutput::output($body);
+//        HttpOutput::output($body);
+        $this->asyncResponse = [
+            'headers' => $rawResponse->getHeaders(),
+            'body' => $rawResponse->getBody(),
+            'httpCode' => $rawResponse->getHttpResponseCode(),
+        ];
     }
 
     public function async_callback_exception($e)
@@ -389,6 +406,15 @@ class YunDunSdk
             }
             HttpLib::logSdk($value, $logFile);
         }
+    }
+
+
+    public function getSyncFullResponse(){
+        return $this->syncResponse;
+    }
+
+    public function getAsyncFullResponse(){
+        return $this->asyncResponse;
     }
 
     /**
