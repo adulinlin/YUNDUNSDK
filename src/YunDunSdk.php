@@ -32,7 +32,7 @@ class YunDunSdk
     private $base_api_url; //api base url
     private $http_client_handler; //http client handler
     private $request; //request 对象
-    private $syncExceptionOutput = [
+    private $syncExceptionOutput  = [
         'code'    => 0,
         'message' => '同步请求异常！请稍后重试！或者联系技术支持！',
     ];
@@ -41,18 +41,20 @@ class YunDunSdk
         'message' => '异步请求异常！请稍后重试！或者联系技术支持！',
     ];
 
-    private $log = true;
+    private $log    = true;
     private $logfileWin;
     private $logfileLinux;
+    private $config = [];
 
     public function __construct($param)
     {
         if (!is_array($param)) {
             throw new YunDunSdkException('param must be array');
         }
+        $this->config           = $param;
         $this->app_id           = $param['app_id'];
         $this->app_secret       = $param['app_secret'];
-        $this->user_id          = (int) $param['user_id'];
+        $this->user_id          = (int)$param['user_id'];
         $this->client_ip        = isset($param['client_ip']) ? trim($param['client_ip']) : '';
         $this->client_userAgent = isset($param['client_userAgent']) ? trim($param['client_userAgent']) : '';
         $this->base_api_url     = isset($param['base_api_url']) && !empty($param['base_api_url']) ? $param['base_api_url'] : self::__BASE_API_URL__;
@@ -75,7 +77,7 @@ class YunDunSdk
             $this->logfileLinux = $param['logfileLinux'];
         }
         if (isset($param['log'])) {
-            $this->log = (bool) $param['log'];
+            $this->log = (bool)$param['log'];
         }
         $this->request = new RawRequest('', '', [], null, 10, []);
         $this->request->setBaseApiUrl($this->base_api_url);
@@ -115,7 +117,7 @@ class YunDunSdk
         $headers = $request->getHeaders();
         $timeOut = $request->getTimeOut();
         $options = $request->getOptions();
-        $this->log('请求参数-request对象-'.print_r($request, true));
+        $this->log('请求参数-request对象-' . print_r($request, true));
 
         $RawResponse = $this->http_client_handler->send($url, $method, $body, $headers, $timeOut, $options);
 
@@ -146,7 +148,7 @@ class YunDunSdk
             'query'   => [],
             'options' => [],
         ];
-        $request = array_merge($defaultRequest, $request);
+        $request        = array_merge($defaultRequest, $request);
 
         $defaultData = [
             'user_id'          => $this->user_id,
@@ -202,7 +204,7 @@ class YunDunSdk
         $this->request->setMethod($request['method']);
         $this->request->setTimeOut($request['timeout']);
         $this->request->setHeaders($request['headers']);
-        isset($_SERVER['HTTP_SOCKETLOG'])  && $this->request->setHeader('Socketlog', $_SERVER['HTTP_SOCKETLOG']);
+        isset($_SERVER['HTTP_SOCKETLOG']) && $this->request->setHeader('Socketlog', $_SERVER['HTTP_SOCKETLOG']);
         isset($_SERVER['HTTP_USER_AGENT']) && $this->request->setHeader('User-Agent', $_SERVER['HTTP_USER_AGENT']);
         $this->request->setUrlParams($request['query']);
         $this->request->setOptions($request['options']);
@@ -242,24 +244,24 @@ class YunDunSdk
             $rawResponse = $this->signedRequest($httpRequest);
             if (!isset($request['options']['async']) || !$request['options']['async']) {
                 $body = $rawResponse->getBody();
-                $this->log('sync response headers:'.print_r($rawResponse->getHeaders(), true));
-                $this->log('sync response body:'.print_r($rawResponse->getBody(), true));
-                $this->log('sync response http_status_code:'.print_r($rawResponse->getHttpResponseCode(), true));
+                $this->log('sync response headers:' . print_r($rawResponse->getHeaders(), true));
+                $this->log('sync response body:' . print_r($rawResponse->getBody(), true));
+                $this->log('sync response http_status_code:' . print_r($rawResponse->getHttpResponseCode(), true));
 
                 return $body;
             }
         } catch (HttpClientException $e) {
-            $this->log('HttpClientException: '.$e->getMessage());
-            $this->syncExceptionOutput($request);
+            $this->log('HttpClientException: ' . $e->getMessage());
+            $this->syncExceptionOutput($request, $e);
         } catch (RequestException $e) {
-            $this->log('RequestException: '.$e->getMessage());
-            $this->syncExceptionOutput($request);
+            $this->log('RequestException: ' . $e->getMessage());
+            $this->syncExceptionOutput($request, $e);
         } catch (InvalidArgumentException $e) {
-            $this->log('InvalidArgumentException: '.$e->getMessage());
-            $this->syncExceptionOutput($request);
+            $this->log('InvalidArgumentException: ' . $e->getMessage());
+            $this->syncExceptionOutput($request, $e);
         } catch (\Exception $e) {
-            $this->log('syncExceptionOutput: '.$e->getMessage());
-            $this->syncExceptionOutput($request);
+            $this->log('syncExceptionOutput: ' . $e->getMessage());
+            $this->syncExceptionOutput($request, $e);
         }
     }
 
@@ -345,9 +347,9 @@ class YunDunSdk
         $httpStatusCode = $response->getStatusCode();
         $rawResponse    = new RawResponse($rawHeaders, $rawBody, $httpStatusCode);
         $body           = $rawResponse->getBody();
-        $this->log('async response headers:'.print_r($rawResponse->getHeaders(), true));
-        $this->log('async response body:'.print_r($rawResponse->getBody(), true));
-        $this->log('async response http_status_code:'.print_r($rawResponse->getHttpResponseCode(), true));
+        $this->log('async response headers:' . print_r($rawResponse->getHeaders(), true));
+        $this->log('async response body:' . print_r($rawResponse->getBody(), true));
+        $this->log('async response http_status_code:' . print_r($rawResponse->getHttpResponseCode(), true));
         $format = isset($this->request->getHeaders()['format']) ? $this->request->getHeaders()['format'] : 'json';
         HttpOutput::setType($format);
         HttpOutput::output($body);
@@ -355,9 +357,12 @@ class YunDunSdk
 
     public function async_callback_exception($e)
     {
+        if (isset($this->config['throwException']) && $this->config['throwException']) {
+            throw $e;
+        }
         $message = $e->getMessage();
         $method  = $e->getRequest()->getMethod();
-        $this->log(__FUNCTION__.' message:'.$message.',method:'.$method);
+        $this->log(__FUNCTION__ . ' message:' . $message . ',method:' . $method);
         $this->asyncExceptionOutput();
     }
 
@@ -388,13 +393,17 @@ class YunDunSdk
 
     /**
      * @param $request
+     * @param  $e
      * @node_name 同步请求失败响应
      *
      * @see
      * @desc
      */
-    private function syncExceptionOutput($request)
+    private function syncExceptionOutput($request, $e)
     {
+        if (isset($this->config['throwException']) && $this->config['throwException']) {
+            throw $e;
+        }
         $format = isset($request['headers']['format']) ? $request['headers']['format'] : 'json';
         HttpOutput::setType($format);
         $body = [
@@ -402,7 +411,7 @@ class YunDunSdk
                 'code'    => $this->syncExceptionOutput['code'],
                 'message' => $this->syncExceptionOutput['message'],
             ],
-            'data' => [],
+            'data'   => [],
         ];
         HttpOutput::output($body);
     }
@@ -422,7 +431,7 @@ class YunDunSdk
                 'code'    => $this->asyncExceptionOutput['code'],
                 'message' => $this->asyncExceptionOutput['message'],
             ],
-            'data' => [],
+            'data'   => [],
         ];
         HttpOutput::output($body);
     }

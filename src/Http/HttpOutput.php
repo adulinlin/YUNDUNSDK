@@ -18,7 +18,9 @@ class HttpOutput
     {
         switch (strtoupper(self::$outputtype)) {
             case 'JSON':
-                header('Content-Type:application/json; charset=utf-8');
+                if (!headers_sent()) {
+                    header('Content-Type:application/json; charset=utf-8');
+                }
                 if (is_array($data)) {
                     echo json_encode($data);
                 } else {
@@ -26,7 +28,9 @@ class HttpOutput
                 }
                 break;
             case 'XML':
-                header('Content-Type:text/xml; charset=utf-8');
+                if (!headers_sent()) {
+                    header('Content-Type:text/xml; charset=utf-8');
+                }
                 if (is_array($data)) {
                     echo self::xml_encode($data);
                 } else {
@@ -34,7 +38,9 @@ class HttpOutput
                 }
                 break;
             case 'JSONP':
-                header('Content-Type:application/json; charset=utf-8');
+                if (!headers_sent()) {
+                    header('Content-Type:application/json; charset=utf-8');
+                }
                 $handler = strtolower('callback');
                 if (is_array($data)) {
                     echo $handler.'('.json_encode($data).');';
