@@ -30,6 +30,7 @@ class YunDunSdk
     private $client_ip; //客户端ip
     private $client_userAgent; //客户端userAgent
     private $base_api_url; //api base url
+    private $host;
     private $http_client_handler; //http client handler
     private $request; //request 对象
     private $syncExceptionOutput  = [
@@ -60,6 +61,7 @@ class YunDunSdk
         $this->client_ip        = isset($param['client_ip']) ? trim($param['client_ip']) : '';
         $this->client_userAgent = isset($param['client_userAgent']) ? trim($param['client_userAgent']) : '';
         $this->base_api_url     = isset($param['base_api_url']) && !empty($param['base_api_url']) ? $param['base_api_url'] : self::__BASE_API_URL__;
+        $this->host             = isset($param['host']) && !empty($param['host']) ? $param['host'] : '';
         if (isset($param['syncExceptionOutputCode'])) {
             $this->syncExceptionOutput['code'] = $param['syncExceptionOutputCode'];
         }
@@ -208,6 +210,9 @@ class YunDunSdk
         $this->request->setHeaders($request['headers']);
         isset($_SERVER['HTTP_SOCKETLOG']) && $this->request->setHeader('Socketlog', $_SERVER['HTTP_SOCKETLOG']);
         isset($_SERVER['HTTP_USER_AGENT']) && $this->request->setHeader('User-Agent', $_SERVER['HTTP_USER_AGENT']);
+        if($this->host){
+            $this->request->setHeader('HOST', $this->host);
+        }
         $this->request->setUrlParams($request['query']);
         $this->request->setOptions($request['options']);
 

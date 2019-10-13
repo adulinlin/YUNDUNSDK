@@ -35,11 +35,15 @@
     $client_ip = 'xx';
     $client_userAgent = '';
     $base_api_url = 'http://apiv4.yundun.cn/V4/';
+    ;base_api_url = 'http://127.0.0.1/V4/'
+    $host = 'apiv4.yundun.cn';
     $handler = 'guzzle'; //curl/guzzle默认guzzle,guzzle支持异步调用，curl驱动目前未实现异步
     $sdk = new YundunSDK (
         [
         'app_id'=>$app_id, 
         'app_secret'=>$app_secret, 
+        'base_api_url' = 'http://127.0.0.1/V4/',
+        'host' => 'apiv4.xx.cn',
         'client_ip'=>$client_ip, 
         'client_userAgent'=>$client_userAgent, 
         'handler'=> $handler,
