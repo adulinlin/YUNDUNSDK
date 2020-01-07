@@ -43,16 +43,8 @@ class YunDunGuzzleHttpClient implements YunDunHttpClientInterface
             'headers'         => $headers,
             'timeout'         => $timeOut,
             'connect_timeout' => 10,
+            'body'            => $body,
         ];
-
-        if (isset($headers['Content-Type']) && 'application/json' == $headers['Content-Type']) {
-            $options['json'] = json_decode($body, true);
-        } elseif (isset($headers['Content-Type']) && 'application/x-www-form-urlencoded' == $headers['Content-Type']) {
-            parse_str($body, $content);
-            $options['form_params'] = $content;
-        } else {
-            throw new HttpClientException(ExceptionCodeMsg::MSG_YUNDUNGUZZLEHTTPCLIENT_SEND_1, ExceptionCodeMsg::CODE_YUNDUNGUZZLEHTTPCLIENT_SEND_1);
-        }
 
         if (isset($otherOptions['async']) && $otherOptions['async']) {
             $callback = $otherOptions['callback'] ?: function () {};

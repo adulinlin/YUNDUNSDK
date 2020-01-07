@@ -89,32 +89,42 @@ class YunDunSdk
         $this->http_client_handler = HttpClientsFactory::createHttpClient($handler);
     }
 
-    /**
-     * @param RawRequest $request
-     *
-     * @return Http\RawResponse
-     * @node_name 签名请求
-     *
-     * @see
-     * @desc
-     */
+
+	/**
+	 * @param RawRequest $request
+	 *
+	 * @return RawResponse
+	 * @throws HttpClientException
+	 * 签名请求
+	 */
     public function signedRequest(RawRequest $request)
     {
-        if ('json' == $request->getBodyType()) {
-            $payload['body'] = $request->getBody();
-            $body            = $request->getBody();
-        } elseif ('array' == $request->getBodyType()) {
-            $payload['body'] = $request->getBody();
-            $body            = RawRequest::build_query($payload);
-        }
-        if ('GET' == strtoupper($request->getMethod())) {
-            $payload['body'] = $request->getUrlParams();
-            $body            = RawRequest::build_query($payload);
-        }
+	    if ('json' == $request->getBodyType()) {
+		    $payload['body'] = $request->getBody();
+	    } elseif ('array' == $request->getBodyType()) {
+		    $payload['body'] = $request->getBody();
+	    }
+	    if ('GET' == strtoupper($request->getMethod())) {
+		    $payload['body'] = $request->getUrlParams();
+	    }
 
         //签名
         $sign = SignedRequest::make($payload, $this->app_secret);
-        $this->request->setHeader('X-Auth-Sign', $sign);
+	    $body = '';
+	    if ('json' == $request->getBodyType()) {
+		    $b = json_decode($payload['body'], 1);
+		    $b['X-Auth-Sign'] = $sign;
+		    $body            = json_encode($payload);
+	    } elseif ('array' == $request->getBodyType()) {
+		    $payload['body']['X-Auth-Sign'] = $sign;
+		    $body            = RawRequest::build_query($payload);
+	    }
+	    if ('GET' == strtoupper($request->getMethod())) {
+		    $payload['body']['X-Auth-Sign'] = $sign;
+		    $this->request->setUrlParams($payload['body']);
+		    $body            = RawRequest::build_query($payload);
+	    }
+//        $this->request->setHeader('X-Auth-Sign', $sign);
         $this->request->setHeader('X-Auth-App-Id', $this->app_id);
         $url     = $request->getUrl();
         $method  = $request->getMethod();
